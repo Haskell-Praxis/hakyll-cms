@@ -1,0 +1,22 @@
+name:                hakyll-cms
+version:             0.1.0.0
+license:             BSD3
+license-file:        LICENSE
+maintainer:          peacemotion@gmail.com
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable hakyll-cms
+  main-is:             Main.hs
+  build-depends:       base >=4.9 && <4.10
+                     , reflex >= 0.5 && < 0.6
+                     , reflex-dom >= 0.4 && < 0.5
+                     , classy-prelude
+                     , jsaddle-warp
+  default-language:    Haskell2010
+
+  if impl(ghcjs)
+    ghc-options:    -dedupe
+    cpp-options:    -DGHCJS_BROWSER
+  else
+    ghc-options:    -Wall

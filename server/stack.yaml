@@ -1,7 +1,0 @@
-resolver: lts-7.19
-
-compiler: ghc-8.0.1
-
-packages:
-- '.'
-- '../shared'

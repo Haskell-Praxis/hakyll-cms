@@ -1,1 +1,0 @@
-module HakyllCms.Shared where
