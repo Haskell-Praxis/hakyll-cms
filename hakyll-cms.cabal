@@ -13,6 +13,7 @@ executable hakyll-cms
                      , reflex-dom >= 0.4 && < 0.5
                      , classy-prelude
                      , jsaddle-warp
+                     , file-embed
   default-language:    Haskell2010
 
   if impl(ghcjs)
