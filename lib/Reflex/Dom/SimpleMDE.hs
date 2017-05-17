@@ -1,11 +1,16 @@
+{-# LANGUAGE TemplateHaskell   #-}
+
 module Reflex.Dom.SimpleMDE where
 
+import           Control.Lens
 import           Data.Default
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
     , _autoSave_uniqueId :: String
     }
+
+makeLenses ''AutoSave
 
 data BlockStyles = BlockStyles
     { _blockStyles_bold   :: BoldBlockStyle
@@ -42,6 +47,8 @@ data InsertTexts = InsertTexts
     , _insertTexts_table          :: Maybe (String, String)
     }
 
+makeLenses ''InsertTexts
+
 instance Default InsertTexts where
     def = InsertTexts
         { _insertTexts_horizontalRule = Nothing
@@ -56,6 +63,8 @@ data ParsingConfig = ParsingConfig
     , _parsingConfig_underscoresBreakWords      :: Bool
     }
 
+makeLenses ''ParsingConfig
+
 instance Default ParsingConfig where
     def = ParsingConfig
         { _parsingConfig_allowAtxHeaderWithoutSpace = False
@@ -67,6 +76,8 @@ data RenderingConfig = RenderingConfig
     { _renderingConfig_singleLineBreaks       :: Bool
     , _renderingConfig_codeSyntaxHighlighting :: Bool
     }
+
+makeLenses ''RenderingConfig
 
 instance Default RenderingConfig where
     def = RenderingConfig
@@ -98,6 +109,8 @@ data SimpleMDEConfig = SimpleMDEConfig
     , _simpleMDEConfig_toolbar                 :: Maybe [String]
     , _simpleMDEConfig_toolbarTips             :: Bool
     }
+
+makeLenses ''SimpleMDEConfig
 
 instance Default SimpleMDEConfig where
     def = SimpleMDEConfig
