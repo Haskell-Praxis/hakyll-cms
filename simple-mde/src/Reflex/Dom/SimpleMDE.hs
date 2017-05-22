@@ -1,9 +1,10 @@
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Reflex.Dom.SimpleMDE where
 
 import           Control.Lens
 import           Data.Default
+import  Reflex.Dom
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
@@ -137,3 +138,6 @@ instance Default SimpleMDEConfig where
         , _simpleMDEConfig_toolbar = Nothing
         , _simpleMDEConfig_toolbarTips = True
         }
+
+simpleMDEWidget :: MonadWidget t m => m ()
+simpleMDEWidget = undefined
