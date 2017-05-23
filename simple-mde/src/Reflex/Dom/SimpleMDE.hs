@@ -1,11 +1,14 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TemplateHaskell       #-}
 
 module Reflex.Dom.SimpleMDE where
 
-import           Control.Lens
+import           Control.Lens                       (makeLenses)
 import           Data.Default
-import  Reflex.Dom
+import           Language.Javascript.JSaddle.Object
+import           Language.Javascript.JSaddle.Types
+import           Reflex.Dom
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
@@ -140,5 +143,14 @@ instance Default SimpleMDEConfig where
         , _simpleMDEConfig_toolbarTips = True
         }
 
-simpleMDEWidget :: DomBuilder t m => m ()
-simpleMDEWidget = el "div" (return ())
+testFFI :: JSM ()
+testFFI = do
+    jsg ("console" :: String) # ("log" :: String) $ [("testing" :: String)]
+    return ()
+
+simpleMDEWidget :: (MonadJSM m, DomBuilder t m) => m ()
+simpleMDEWidget = do
+    mdeDiv <- fmap fst $ el' "div" (return ())
+    let mdeEl = _element_raw mdeDiv
+    liftJSM testFFI
+    return ()
