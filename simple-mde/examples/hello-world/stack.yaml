@@ -18,6 +18,7 @@ packages:
     - reflex-dom-core
   extra-dep: true
 
+
 extra-deps:
 - dependent-sum-template-0.0.0.5
 - dependent-sum-0.3.2.2
@@ -30,6 +31,18 @@ extra-deps:
 - ghcjs-dom-jsaddle-0.8.0.0
 - jsaddle-dom-0.8.0.0
 - jsaddle-warp-0.8.3.1
+- jsaddle-webkit2gtk-0.8.3.1
+- gi-webkit2-4.0.12
+- webkit2gtk3-javascriptcore-0.14.2.1
+- gi-javascriptcore-4.0.12
+- haskell-gi-0.20.1
+- haskell-gi-base-0.20.2
+- gi-gio-2.0.12
+- gi-glib-2.0.12
+- gi-gtk-3.0.14
+
+# on ubuntu:  install webkit2gtk-4.0-dev, gobject-introspection,libgirepository1.0-dev
+
 
 flags: {}
 
