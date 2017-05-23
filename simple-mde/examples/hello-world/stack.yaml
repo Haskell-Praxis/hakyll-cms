@@ -2,6 +2,8 @@ resolver: lts-7.23
 
 packages:
 - location: '.'
+- location: './../..'
+  extra-dep: true
 - location:
     git: https://github.com/reflex-frp/reflex
     commit: 2fe0f566f8d6b6eceb178a85516643390111bb83
@@ -27,6 +29,7 @@ extra-deps:
 - zenc-0.1.1
 - ghcjs-dom-jsaddle-0.8.0.0
 - jsaddle-dom-0.8.0.0
+- jsaddle-warp-0.8.3.1
 
 flags: {}
 

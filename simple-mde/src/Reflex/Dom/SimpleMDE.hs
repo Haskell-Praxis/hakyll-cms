@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Reflex.Dom.SimpleMDE where
 
@@ -139,5 +140,5 @@ instance Default SimpleMDEConfig where
         , _simpleMDEConfig_toolbarTips = True
         }
 
-simpleMDEWidget :: MonadWidget t m => m ()
-simpleMDEWidget = undefined
+simpleMDEWidget :: DomBuilder t m => m ()
+simpleMDEWidget = el "div" (return ())
