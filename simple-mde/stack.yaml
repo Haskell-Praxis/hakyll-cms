@@ -17,8 +17,6 @@ packages:
   extra-dep: true
 
 extra-deps:
-- dependent-sum-template-0.0.0.5
-- dependent-sum-0.3.2.2
 - ghcjs-dom-0.8.0.0
 - jsaddle-0.8.3.2
 - jsaddle-wkwebview-0.8.3.2
