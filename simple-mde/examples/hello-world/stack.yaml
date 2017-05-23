@@ -1,4 +1,4 @@
-resolver: lts-7.23
+resolver: lts-7.19
 
 packages:
 - location: '.'
