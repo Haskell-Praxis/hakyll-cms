@@ -8,7 +8,8 @@ import           Control.Lens                       (makeLenses)
 import           Data.Default
 import           Language.Javascript.JSaddle.Object
 import           Language.Javascript.JSaddle.Types
-import           Reflex.Dom
+import           Reflex.Dom.Builder.Class
+import           Reflex.Dom.Widget.Basic
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int

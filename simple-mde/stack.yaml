@@ -12,14 +12,12 @@ packages:
     commit: 706ab47df9729bdc5c4ac3f4d8dfd4661d9f6e1a
     # Latest develop comment at the time of writing
   subdirs:
-    - reflex-dom
     - reflex-dom-core
   extra-dep: true
 
 extra-deps:
 - ghcjs-dom-0.8.0.0
 - jsaddle-0.8.3.2
-- jsaddle-wkwebview-0.8.3.2
 - prim-uniq-0.1.0.1
 - ref-tf-0.4.0.1
 - zenc-0.1.1
