@@ -1,13 +1,17 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE CPP                   #-}
 
 module Reflex.Dom.SimpleMDE where
 
 import           Control.Lens                       (makeLenses)
 import           Data.Default
+import           Data.FileEmbed
+import           Data.Text                          (Text)
 import           Language.Javascript.JSaddle.Object
 import           Language.Javascript.JSaddle.Types
+import           Language.Javascript.JSaddle.Evaluate
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Widget.Basic
 
@@ -144,6 +148,13 @@ instance Default SimpleMDEConfig where
         , _simpleMDEConfig_toolbarTips = True
         }
 
+importSimpleMdeJs :: JSM ()
+importSimpleMdeJs = undefined
+
+-- | The contents of the upstream test.js as a Text value.
+testJs :: Text
+testJs = $(embedStringFile "jslib/test.js")
+
 testFFI :: JSM ()
 testFFI = do
     jsg ("console" :: String) # ("log" :: String) $ [("testing" :: String)]
@@ -154,4 +165,11 @@ simpleMDEWidget = do
     mdeDiv <- fmap fst $ el' "div" (return ())
     let mdeEl = _element_raw mdeDiv
     liftJSM testFFI
+#ifdef ghcjs_HOST_OS
+    --liftJSM importSimpleMdeJs
+    liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [("in ghcjs" :: String)]
+#else
+    liftJSM $ eval $ ("console.log('in jsaddle eval');" :: String)
+    liftJSM $ eval $ testJs
+#endif
     return ()
