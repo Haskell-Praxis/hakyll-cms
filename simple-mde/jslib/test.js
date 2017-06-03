@@ -1,3 +1,3 @@
 console.log("Hello test.js");
 
-window.testjsVar = "heio!";
+window.SimpleMDE = "heio!";

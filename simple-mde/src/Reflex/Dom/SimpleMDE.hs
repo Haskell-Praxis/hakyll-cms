@@ -6,12 +6,14 @@
 module Reflex.Dom.SimpleMDE where
 
 import           Control.Lens                       (makeLenses)
+import           Control.Monad                      (when, void)
 import           Data.Default
 import           Data.FileEmbed
 import           Data.Text                          (Text)
 import           Language.Javascript.JSaddle.Object
 import           Language.Javascript.JSaddle.Types
 import           Language.Javascript.JSaddle.Evaluate
+import           Language.Javascript.JSaddle.Value
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Widget.Basic
 
@@ -148,8 +150,34 @@ instance Default SimpleMDEConfig where
         , _simpleMDEConfig_toolbarTips = True
         }
 
+#ifdef ghcjs_HOST_OS
+-- compiled with ghcjs; simpleMDE is bundled and executed by ghcjs
+-- due to the js-sources entry in simple-mde.cabal. Thus
+-- we don't need to do anything here.
 importSimpleMdeJs :: JSM ()
-importSimpleMdeJs = undefined
+importSimpleMdeJs = return ()
+
+#else
+
+-- Compiled with ghc, running in browser via jsaddle
+-- As opposed to ghcjs, this setup doesn't automatically bundle
+-- and run dependencies listed under js-sources in simple-mde.cabal
+-- Thus we need to bundle the source via template-haskell and run
+-- it via eval the first time this component is included.
+
+-- | The contents of the upstream simpleMde js as a Text value.
+simpleMdeCode :: Text
+simpleMdeCode = $(embedStringFile "jslib/test.js")
+
+importSimpleMdeJs :: JSM ()
+importSimpleMdeJs = do
+  simpleMDE <- jsg ("SimpleMDE" :: String)
+  -- stop importing if it's already been imported
+  notYetLoaded <- valIsUndefined simpleMDE
+  when notYetLoaded $
+    void $ eval simpleMdeCode
+
+#endif
 
 -- | The contents of the upstream test.js as a Text value.
 testJs :: Text
@@ -165,11 +193,14 @@ simpleMDEWidget = do
     mdeDiv <- fmap fst $ el' "div" (return ())
     let mdeEl = _element_raw mdeDiv
     liftJSM testFFI
+
+    liftJSM $ importSimpleMdeJs
+
 #ifdef ghcjs_HOST_OS
-    --liftJSM importSimpleMdeJs
+    -- compiled with ghcjs
     liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [("in ghcjs" :: String)]
 #else
+    -- compiled with ghc, running in browser via jsaddle
     liftJSM $ eval $ ("console.log('in jsaddle eval');" :: String)
-    liftJSM $ eval $ testJs
 #endif
     return ()
