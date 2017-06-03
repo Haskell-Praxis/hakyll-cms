@@ -188,15 +188,7 @@ simpleMDEWidget :: (MonadJSM m, DomBuilder t m) => m ()
 simpleMDEWidget = do
     mdeDiv <- fmap fst $ el' "div" (return ())
     let mdeEl = _element_raw mdeDiv
-    liftJSM testFFI
-
     liftJSM $ importSimpleMdeJs
 
-#ifdef ghcjs_HOST_OS
-    -- compiled with ghcjs
-    liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [("in ghcjs" :: String)]
-#else
-    -- compiled with ghc, running in browser via jsaddle
-    liftJSM $ eval $ ("console.log('in jsaddle eval');" :: String)
-#endif
+    -- liftJSM testFFI
     return ()
