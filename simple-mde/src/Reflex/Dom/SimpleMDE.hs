@@ -167,7 +167,7 @@ importSimpleMdeJs = return ()
 
 -- | The contents of the upstream simpleMde js as a Text value.
 simpleMdeCode :: Text
-simpleMdeCode = $(embedStringFile "jslib/test.js")
+simpleMdeCode = $(embedStringFile "jslib/simplemde-markdown-editor/dist/simplemde.min.js")
 
 importSimpleMdeJs :: JSM ()
 importSimpleMdeJs = do
@@ -178,10 +178,6 @@ importSimpleMdeJs = do
     void $ eval simpleMdeCode
 
 #endif
-
--- | The contents of the upstream test.js as a Text value.
-testJs :: Text
-testJs = $(embedStringFile "jslib/test.js")
 
 testFFI :: JSM ()
 testFFI = do

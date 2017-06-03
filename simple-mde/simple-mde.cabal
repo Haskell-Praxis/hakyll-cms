@@ -11,7 +11,7 @@ library
   hs-source-dirs:      src
   js-sources:
     -- Order is important. They'll be loaded/executed from the bottom to the top.
-    jslib/test.js
+    jslib/simplemde-markdown-editor/dist/simplemde.min.js
   build-depends:       base
                      , data-default >= 0.7.1 && < 0.8
                      , lens >= 4.14 && < 5
