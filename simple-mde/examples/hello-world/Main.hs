@@ -14,3 +14,4 @@ import           Reflex.Dom.Widget.Basic
 main :: IO ()
 main = run 8081 $ mainWidget $ do
   simpleMDEWidget
+  el "style" $ text simpleMdeCss

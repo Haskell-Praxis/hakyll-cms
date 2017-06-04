@@ -184,6 +184,10 @@ testFFI = do
     jsg ("console" :: String) # ("log" :: String) $ [("testing" :: String)]
     return ()
 
+simpleMdeCss :: Text
+simpleMdeCss = $(embedStringFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
+
+
 simpleMDEWidget :: (MonadJSM m, DomBuilder t m) => m ()
 simpleMDEWidget = do
     mdeDiv <- fmap fst $ el' "div" (return ())
