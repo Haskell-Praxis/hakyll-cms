@@ -191,7 +191,7 @@ simpleMdeCss = $(embedStringFile "jslib/simplemde-markdown-editor/dist/simplemde
 simpleMDEWidget :: (MonadJSM m, DomBuilder t m) => m ()
 simpleMDEWidget = do
     liftJSM $ importSimpleMdeJs
-    txtArea <- fmap fst $ el' "textarea" (return ())
+    txtArea <- fmap fst $ el' "textarea" blank
     let mdeEl = _element_raw txtArea
 
     -- liftJSM testFFI
