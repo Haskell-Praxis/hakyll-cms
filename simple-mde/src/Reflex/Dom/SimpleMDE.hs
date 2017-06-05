@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE CPP                   #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module Reflex.Dom.SimpleMDE where
 
@@ -16,7 +17,11 @@ import           Language.Javascript.JSaddle.Types
 import           Language.Javascript.JSaddle.Evaluate
 import           Language.Javascript.JSaddle.Value
 import           Reflex.Dom.Builder.Class
+import           Reflex.Dom.Builder.Immediate
 import           Reflex.Dom.Widget.Basic
+import           GHCJS.Marshal.Pure                 (pToJSVal)
+import           Reflex.Dom.Widget.Input
+import           Reflex.PostBuild.Class             (PostBuild)
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
@@ -188,12 +193,20 @@ testFFI = do
 simpleMdeCss :: ByteString
 simpleMdeCss = $(embedFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
 
-
-simpleMDEWidget :: (MonadJSM m, DomBuilder t m) => m ()
+simpleMDEWidget :: (MonadJSM m, DomBuilder t m, DomBuilderSpace m ~ GhcjsDomSpace, PostBuild t m) => m ()
 simpleMDEWidget = do
     liftJSM $ importSimpleMdeJs
     txtArea <- fmap fst $ elClass' "textarea" "simplemde-mount" blank
     let mdeEl = _element_raw txtArea
+    liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal mdeEl]
+    -- use PostBuild to make sure constructor is evaluated *after* textArea is created
+    -- liftJSM $ eval $ ("new SimpleMDE()" :: Text)
+    -- var s = new SimpleMDE({element: mdeEl})
+
+    -- txtArea2 <- textArea def
+    -- let mdeEl2 = _textArea_element txtArea2
+    -- @pToJSVal for textarea: https://github.com/ghcjs/ghcjs-dom/blob/0e9e002e014a0058e8ed9e5d8159d3064510fb6c/ghcjs-dom-jsffi/src/GHCJS/DOM/JSFFI/Generated/HTMLTextAreaElement.hs#L43
+    -- liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [pToJSVal txtArea2]
 
     -- liftJSM testFFI
     return ()
