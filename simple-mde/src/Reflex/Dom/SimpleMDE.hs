@@ -10,6 +10,7 @@ import           Control.Monad                      (when, void)
 import           Data.Default
 import           Data.FileEmbed
 import           Data.Text                          (Text)
+import           Data.ByteString                    (ByteString)
 import           Language.Javascript.JSaddle.Object
 import           Language.Javascript.JSaddle.Types
 import           Language.Javascript.JSaddle.Evaluate
@@ -184,8 +185,8 @@ testFFI = do
     jsg ("console" :: String) # ("log" :: String) $ [("testing" :: String)]
     return ()
 
-simpleMdeCss :: Text
-simpleMdeCss = $(embedStringFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
+simpleMdeCss :: ByteString
+simpleMdeCss = $(embedFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
 
 
 simpleMDEWidget :: (MonadJSM m, DomBuilder t m) => m ()
