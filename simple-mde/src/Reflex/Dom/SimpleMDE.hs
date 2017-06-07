@@ -3,7 +3,6 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE FlexibleContexts      #-}
 
 module Reflex.Dom.SimpleMDE where
 
@@ -24,10 +23,7 @@ import           GHCJS.Marshal.Pure                 (pToJSVal, PToJSVal)
 import           Reflex.Dom.Widget.Input
 import           Reflex.PostBuild.Class
 
-
 import           Reflex
-import           Language.Javascript.JSaddle.Run    (syncPoint)
--- import           Reflex.Dynamic                     (holdDyn) -- TODO for debugging; remove me
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
@@ -191,69 +187,23 @@ importSimpleMdeJs = do
 
 #endif
 
-testFFI :: JSM ()
-testFFI = do
-    jsg ("console" :: String) # ("log" :: String) $ [("testing" :: String)]
-    return ()
-
 simpleMdeCss :: ByteString
 simpleMdeCss = $(embedFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
 
-js_startSimpleMDE :: PToJSVal a => a -> JSM JSVal
-js_startSimpleMDE el = do
+startSimpleMDE :: PToJSVal a => a -> JSM JSVal
+startSimpleMDE el = do
   conf <- obj
   (conf <# ("element" :: Text)) (pToJSVal el)
   new (jsg ("SimpleMDE" :: Text)) (toJSVal conf)
 
-  -- eval ("console.log('new SimpleMDE:', new SimpleMDE())" :: Text)
-
-
-
-logEl :: PToJSVal a => a -> JSM ()
-logEl el = do
-  jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal el]
-  return ()
-
 simpleMDEWidget :: (
-    MonadHold t m, -- remove when there's no holdDyn anymore (atm it's just there for debugging)
-    -- PerformEvent t m ~ JSM m,
-    PerformEvent t m,
-    MonadJSM (Performable m),
     MonadJSM m,
     DomBuilder t m,
-    DomBuilderSpace m ~ GhcjsDomSpace,
-    PostBuild t m
+    DomBuilderSpace m ~ GhcjsDomSpace
   ) => m ()
 simpleMDEWidget = do
     liftJSM $ importSimpleMdeJs
     txtArea <- fmap fst $ elClass' "textarea" "simplemde-mount" blank
     let mdeEl = _element_raw txtArea
-    liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal mdeEl]
-    postBuildEvt <- getPostBuild
-
-    dynText =<< holdDyn "" ("we're now post build!" <$ postBuildEvt)
-    fooEvt <- return (("we're now post build!" :: String) <$ postBuildEvt)
-    foo <- holdDyn (""::String) (("we're now post build!" :: String) <$ postBuildEvt)
-    -- mdeEvt <- return (js_startSimpleMDE <$ postBuildEvt)
-
-    -- bar <- performEvent (liftJSM js_startSimpleMDE <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
-    -- bar <- performEvent (liftJSM (logEl mdeEl) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
-    -- bar <- performEvent (liftJSM (eval $ ("console.log('selected area: ', document.querySelector('textarea'))" :: Text)) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
-    bar <- performEvent (liftJSM (js_startSimpleMDE mdeEl) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
-
-
-
-
-    -- liftJSM syncPoint
-
-    -- use PostBuild to make sure constructor is evaluated *after* textArea is created
-    -- liftJSM $ eval $ ("new SimpleMDE()" :: Text)
-    -- var s = new SimpleMDE({element: mdeEl})
-
-    -- txtArea2 <- textArea def
-    -- let mdeEl2 = _textArea_element txtArea2
-    -- @pToJSVal for textarea: https://github.com/ghcjs/ghcjs-dom/blob/0e9e002e014a0058e8ed9e5d8159d3064510fb6c/ghcjs-dom-jsffi/src/GHCJS/DOM/JSFFI/Generated/HTMLTextAreaElement.hs#L43
-    -- liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [pToJSVal txtArea2]
-
-    -- liftJSM testFFI
+    liftJSM $ startSimpleMDE mdeEl
     return ()
