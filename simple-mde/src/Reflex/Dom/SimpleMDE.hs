@@ -20,7 +20,7 @@ import           Language.Javascript.JSaddle.Value
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Builder.Immediate
 import           Reflex.Dom.Widget.Basic
-import           GHCJS.Marshal.Pure                 (pToJSVal)
+import           GHCJS.Marshal.Pure                 (pToJSVal, PToJSVal)
 import           Reflex.Dom.Widget.Input
 import           Reflex.PostBuild.Class
 
@@ -203,10 +203,13 @@ js_startSimpleMDE :: JSM JSVal
 js_startSimpleMDE = eval ("console.log('new SimpleMDE:', new SimpleMDE())" :: Text)
 -- jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal mdeEl]
 
-logEl el = undefined
+logEl :: PToJSVal a => a -> JSM ()
+logEl el = do
+  jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal el]
+  return ()
 
 simpleMDEWidget :: (
-    MonadHold t m,
+    MonadHold t m, -- remove when there's no holdDyn anymore (atm it's just there for debugging)
     -- PerformEvent t m ~ JSM m,
     PerformEvent t m,
     MonadJSM (Performable m),
@@ -226,7 +229,14 @@ simpleMDEWidget = do
     fooEvt <- return (("we're now post build!" :: String) <$ postBuildEvt)
     foo <- holdDyn (""::String) (("we're now post build!" :: String) <$ postBuildEvt)
     -- mdeEvt <- return (js_startSimpleMDE <$ postBuildEvt)
-    bar <- performEvent (liftJSM js_startSimpleMDE <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+
+    -- bar <- performEvent (liftJSM js_startSimpleMDE <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+    -- bar <- performEvent (liftJSM (logEl mdeEl) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+    bar <- performEvent (liftJSM (eval $ ("console.log('selected area: ', document.querySelector('textarea'))" :: Text)) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+
+
+
+
     -- liftJSM syncPoint
 
     -- use PostBuild to make sure constructor is evaluated *after* textArea is created
