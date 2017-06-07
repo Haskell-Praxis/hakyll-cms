@@ -3,6 +3,7 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE FlexibleContexts      #-}
 
 module Reflex.Dom.SimpleMDE where
 
@@ -21,7 +22,12 @@ import           Reflex.Dom.Builder.Immediate
 import           Reflex.Dom.Widget.Basic
 import           GHCJS.Marshal.Pure                 (pToJSVal)
 import           Reflex.Dom.Widget.Input
-import           Reflex.PostBuild.Class             (PostBuild)
+import           Reflex.PostBuild.Class
+
+
+import           Reflex
+import           Language.Javascript.JSaddle.Run    (syncPoint)
+-- import           Reflex.Dynamic                     (holdDyn) -- TODO for debugging; remove me
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
@@ -193,12 +199,36 @@ testFFI = do
 simpleMdeCss :: ByteString
 simpleMdeCss = $(embedFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
 
-simpleMDEWidget :: (MonadJSM m, DomBuilder t m, DomBuilderSpace m ~ GhcjsDomSpace, PostBuild t m) => m ()
+js_startSimpleMDE :: JSM JSVal
+js_startSimpleMDE = eval ("console.log('new SimpleMDE:', new SimpleMDE())" :: Text)
+-- jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal mdeEl]
+
+logEl el = undefined
+
+simpleMDEWidget :: (
+    MonadHold t m,
+    -- PerformEvent t m ~ JSM m,
+    PerformEvent t m,
+    MonadJSM (Performable m),
+    MonadJSM m,
+    DomBuilder t m,
+    DomBuilderSpace m ~ GhcjsDomSpace,
+    PostBuild t m
+  ) => m ()
 simpleMDEWidget = do
     liftJSM $ importSimpleMdeJs
     txtArea <- fmap fst $ elClass' "textarea" "simplemde-mount" blank
     let mdeEl = _element_raw txtArea
     liftJSM $ jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal mdeEl]
+    postBuildEvt <- getPostBuild
+
+    dynText =<< holdDyn "" ("we're now post build!" <$ postBuildEvt)
+    fooEvt <- return (("we're now post build!" :: String) <$ postBuildEvt)
+    foo <- holdDyn (""::String) (("we're now post build!" :: String) <$ postBuildEvt)
+    -- mdeEvt <- return (js_startSimpleMDE <$ postBuildEvt)
+    bar <- performEvent (liftJSM js_startSimpleMDE <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+    -- liftJSM syncPoint
+
     -- use PostBuild to make sure constructor is evaluated *after* textArea is created
     -- liftJSM $ eval $ ("new SimpleMDE()" :: Text)
     -- var s = new SimpleMDE({element: mdeEl})
