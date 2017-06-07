@@ -3,40 +3,21 @@
 
 module Hakyll.CMS.API where
 
+import           Data.Map
 import           Data.Text
 import           Data.Time
+import           Hakyll.CMS.Types
+import qualified Hakyll.CMS.Types as Types
 import           Servant.API
 
-type API = GetPost
-      :<|> GetPosts
-      :<|> CreatePost
-      :<|> DeletePost
+type API =
+         ListPosts
+    :<|> Capture "post" Name :> PostAPI
 
--- URL: /new
-type CreatePost = "new"
-                    :> ReqBody '[JSON] BlogPost
-                    :> PostCreated '[JSON] BlogPost
+type ListPosts =
+    Get '[JSON] [PostSummary]
 
--- URL: /
-type GetPosts = Get '[JSON] [BlogPost]
-
--- URL: /$post
-type GetPost = Capture "post" Text
-                :> Get '[JSON] BlogPost
-
-type DeletePost = Capture "post" Text
-                    :> DeleteAccepted
-
-
-
-
-type Author = Text
-type Tag = Text
-
-data BlogPost = BlogPost
-  { author  :: Maybe Author
-  , created :: UTCTime
-  , title   :: Text
-  , tags    :: [Tag]
-  , body    :: Text
-  }
+type PostAPI =
+         Get '[JSON] Types.Post
+    :<|> ReqBody '[JSON] Types.Post :> Put '[] ()
+    :<|> DeleteAccepted '[] ()
