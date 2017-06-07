@@ -199,9 +199,15 @@ testFFI = do
 simpleMdeCss :: ByteString
 simpleMdeCss = $(embedFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
 
-js_startSimpleMDE :: JSM JSVal
-js_startSimpleMDE = eval ("console.log('new SimpleMDE:', new SimpleMDE())" :: Text)
--- jsg ("console" :: String) # ("log" :: String) $ [ pToJSVal mdeEl]
+js_startSimpleMDE :: PToJSVal a => a -> JSM JSVal
+js_startSimpleMDE el = do
+  conf <- obj
+  (conf <# ("element" :: Text)) (pToJSVal el)
+  new (jsg ("SimpleMDE" :: Text)) (toJSVal conf)
+
+  -- eval ("console.log('new SimpleMDE:', new SimpleMDE())" :: Text)
+
+
 
 logEl :: PToJSVal a => a -> JSM ()
 logEl el = do
@@ -232,7 +238,8 @@ simpleMDEWidget = do
 
     -- bar <- performEvent (liftJSM js_startSimpleMDE <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
     -- bar <- performEvent (liftJSM (logEl mdeEl) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
-    bar <- performEvent (liftJSM (eval $ ("console.log('selected area: ', document.querySelector('textarea'))" :: Text)) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+    -- bar <- performEvent (liftJSM (eval $ ("console.log('selected area: ', document.querySelector('textarea'))" :: Text)) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
+    bar <- performEvent (liftJSM (js_startSimpleMDE mdeEl) <$ postBuildEvt) -- performEvent ~ fmap but allows side-effects. takes stream of performables, evaluates them, returns stream of results.
 
 
 
