@@ -202,8 +202,9 @@ simpleMDEWidget :: (
     DomBuilderSpace m ~ GhcjsDomSpace
   ) => m ()
 simpleMDEWidget = do
-    liftJSM $ importSimpleMdeJs
-    txtArea <- fmap fst $ elClass' "textarea" "simplemde-mount" blank
-    let mdeEl = _element_raw txtArea
-    liftJSM $ startSimpleMDE mdeEl
-    return ()
+    elClass "div" "simplemde-root" $ do
+      liftJSM $ importSimpleMdeJs
+      txtArea <- fmap fst $ elClass' "textarea" "simplemde-textarea" blank
+      let mdeEl = _element_raw txtArea
+      liftJSM $ startSimpleMDE mdeEl
+      return ()
