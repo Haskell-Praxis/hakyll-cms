@@ -8,6 +8,7 @@ module Reflex.Dom.SimpleMDE where
 
 import           Control.Lens                       (makeLenses)
 import           Control.Monad                      (when, void)
+import           Control.Monad.IO.Class
 import           Data.Default
 import           Data.FileEmbed
 import           Data.Text                          (Text)
@@ -22,6 +23,7 @@ import           Reflex.Dom.Widget.Basic
 import           GHCJS.Marshal.Pure                 (pToJSVal, PToJSVal)
 import           Reflex.Dom.Widget.Input
 import           Reflex.PostBuild.Class
+import           Reflex.TriggerEvent.Class
 
 import           Reflex
 
@@ -199,7 +201,11 @@ startSimpleMDE el = do
 simpleMDEWidget :: (
     MonadJSM m,
     DomBuilder t m,
-    DomBuilderSpace m ~ GhcjsDomSpace
+    DomBuilderSpace m ~ GhcjsDomSpace,
+    TriggerEvent t m,
+
+    PostBuild t m,
+    MonadHold t m
   ) => m ()
 simpleMDEWidget = do
     elClass "div" "simplemde-root" $ do
@@ -207,4 +213,7 @@ simpleMDEWidget = do
       txtArea <- fmap fst $ elClass' "textarea" "simplemde-textarea" blank
       let mdeEl = _element_raw txtArea
       liftJSM $ startSimpleMDE mdeEl
+      (fooEvt, triggerFoo) <- newTriggerEvent
+      dynText  =<< holdDyn "" ("Custom event has triggered!" <$ fooEvt)
+      liftIO $ triggerFoo ()
       return ()
