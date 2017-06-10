@@ -4,13 +4,17 @@
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE TypeFamilies          #-}
 
+{-# LANGUAGE ScopedTypeVariables   #-}
+
 module Reflex.Dom.SimpleMDE where
 
 import           Control.Lens                       (makeLenses)
 import           Control.Monad                      (when, void)
 import           Control.Monad.IO.Class
+import           Control.Lens.Operators             ((^.))
 import           Data.Default
 import           Data.FileEmbed
+import           Data.Maybe                         (fromMaybe, listToMaybe)
 import           Data.Text                          (Text)
 import           Data.ByteString                    (ByteString)
 import           Language.Javascript.JSaddle.Object
@@ -24,8 +28,11 @@ import           GHCJS.Marshal.Pure                 (pToJSVal, PToJSVal)
 import           Reflex.Dom.Widget.Input
 import           Reflex.PostBuild.Class
 import           Reflex.TriggerEvent.Class
-
 import           Reflex
+
+
+
+import Control.Monad.Fix
 
 data AutoSave = AutoSave
     { _autoSave_delay    :: Int
@@ -205,7 +212,10 @@ simpleMDEWidget :: (
     TriggerEvent t m,
 
     PostBuild t m,
-    MonadHold t m
+    MonadHold t m,
+
+    MonadFix m
+    --Reflex t
   ) => m ()
 simpleMDEWidget = do
     elClass "div" "simplemde-root" $ do
@@ -215,7 +225,8 @@ simpleMDEWidget = do
       -- simpleMDEObj :: JSVal
       simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
       (fooEvt, triggerFoo) <- newTriggerEvent
-      dynText  =<< holdDyn "" ("Custom event has triggered!" <$ fooEvt)
+      dynText  =<< holdDyn "" ("Custom event has triggered! " <$ fooEvt)
+
       -- triggerFoo :: a -> IO ()
       liftIO $ triggerFoo ()
 
@@ -224,9 +235,28 @@ simpleMDEWidget = do
         ("on"::Text)
         ("change"::Text)
         (eval ("(function() {console.log('on change')})"::Text))
+
+      let codemirror = simpleMDEObj ! ("codemirror"::Text)
+      let parseEvent = \e -> (return () :: JSM ())
+
+      changeEvent <- getElementEvent "change" parseEvent codemirror
+      (ct :: Dynamic t Int) <- count changeEvent
+      display ct
       --return
       -- simplemde.codemirror.on("change", function(){
   -- 	console.log(simplemde.value());
   -- });
 
       return ()
+-- adapted from https://github.com/ConferHealth/reflex-stripe/blob/1842b100e6275bbb343ed9be4161bb8821299f80/src/Reflex/Stripe/Elements/Types.hs#L186 courtesy of dridus
+getElementEvent :: (MonadJSM m, TriggerEvent t m, MakeObject el) => Text -> (JSVal -> JSM a) -> el -> m (Event t a)
+getElementEvent eventType parseEvent el = do
+  -- FIXME would newEventWithLazyTriggerWithOnComplete be good to use here?
+  (ev, trigger) <- newTriggerEvent
+  liftJSM $ do
+    funJsv <- function $ \ _ _ args -> do
+      a <- parseEvent (fromMaybe jsNull $ listToMaybe args)
+      liftIO $ trigger a
+    -- FIXME Function never gets explicitly freed
+    void $ el ^. js2 ("on" :: Text) eventType funJsv
+  pure ev
