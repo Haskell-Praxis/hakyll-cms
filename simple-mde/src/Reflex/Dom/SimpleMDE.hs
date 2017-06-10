@@ -212,8 +212,21 @@ simpleMDEWidget = do
       liftJSM $ importSimpleMdeJs
       txtArea <- fmap fst $ elClass' "textarea" "simplemde-textarea" blank
       let mdeEl = _element_raw txtArea
-      liftJSM $ startSimpleMDE mdeEl
+      -- simpleMDEObj :: JSVal
+      simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
       (fooEvt, triggerFoo) <- newTriggerEvent
       dynText  =<< holdDyn "" ("Custom event has triggered!" <$ fooEvt)
+      -- triggerFoo :: a -> IO ()
       liftIO $ triggerFoo ()
+
+      liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) ("hello world" :: Text)
+      liftJSM $ simpleMDEObj ! ("codemirror"::Text) ^. js2
+        ("on"::Text)
+        ("change"::Text)
+        (eval ("(function() {console.log('on change')})"::Text))
+      --return
+      -- simplemde.codemirror.on("change", function(){
+  -- 	console.log(simplemde.value());
+  -- });
+
       return ()
