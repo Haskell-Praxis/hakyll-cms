@@ -4,7 +4,7 @@
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE TypeFamilies          #-}
 
--- {-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 module Reflex.Dom.SimpleMDE where
 
@@ -19,6 +19,7 @@ import           Data.Text                          (Text)
 import           Data.ByteString                    (ByteString)
 import           Language.Javascript.JSaddle.Object
 import           Language.Javascript.JSaddle.Types
+import           Language.Javascript.JSaddle.Classes
 import           Language.Javascript.JSaddle.Evaluate
 import           Language.Javascript.JSaddle.Value
 import           Reflex.Dom.Builder.Class
@@ -207,7 +208,7 @@ simpleMDEWidget :: (
     DomBuilder t m,
     DomBuilderSpace m ~ GhcjsDomSpace,
     TriggerEvent t m
-  ) => m (Event t ())
+  ) => m (Event t Text)
 simpleMDEWidget =
     elClass "div" "simplemde-root" $ do
       liftJSM importSimpleMdeJs
@@ -222,10 +223,29 @@ simpleMDEWidget =
         ("change"::Text)
         (eval ("(function() {console.log('on change')})"::Text))
 
-      let codemirror = simpleMDEObj ! ("codemirror"::Text)
-      let parseEvent e = return () :: JSM ()
+      getChangeEvent simpleMDEObj
 
-      getElementEvent "change" parseEvent codemirror
+      -- let codemirror = simpleMDEObj ! ("codemirror"::Text)
+      -- let parseEvent e = return () :: JSM ()
+      -- getElementEvent "change" parseEvent codemirror
+
+
+
+-- getElementEvent :: (MonadJSM m, TriggerEvent t m, MakeObject el) => Text -> (JSVal -> JSM a) -> el -> m (Event t a)
+getChangeEvent :: (MonadJSM m, TriggerEvent t m) => JSVal -> m (Event t Text)
+getChangeEvent simpleMDEObj = do
+  let codemirror = simpleMDEObj ! ("codemirror"::Text)
+  (ev, trigger) <- newTriggerEvent
+  liftJSM $ do
+    funJsv <- function $ \ _ _ args -> do
+      -- a <- parseEvent (fromMaybe jsNull $ listToMaybe args)
+      txtVal <- liftJSM $ simpleMDEObj ^. js0 ("value" :: Text)
+      (maybeTxt :: Maybe Text) <- liftJSM $ fromJSVal txtVal
+      let txt = fromMaybe "" maybeTxt
+      liftIO $ trigger txt
+    void $ codemirror ^. js2 ("on" :: Text) ("change" :: Text) funJsv
+  pure ev
+
 
 
 -- adapted from https://github.com/ConferHealth/reflex-stripe/blob/1842b100e6275bbb343ed9be4161bb8821299f80/src/Reflex/Stripe/Elements/Types.hs#L186 courtesy of dridus
