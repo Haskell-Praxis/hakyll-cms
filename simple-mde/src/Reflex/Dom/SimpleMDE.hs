@@ -207,25 +207,14 @@ simpleMDEWidget :: (
     DomBuilder t m,
     DomBuilderSpace m ~ GhcjsDomSpace,
     TriggerEvent t m
-
-    -- PostBuild t m
-    -- MonadHold t m
-
-    -- MonadFix m
-    --Reflex t
   ) => m (Event t ())
-simpleMDEWidget = do
+simpleMDEWidget =
     elClass "div" "simplemde-root" $ do
-      liftJSM $ importSimpleMdeJs
-      txtArea <- fmap fst $ elClass' "textarea" "simplemde-textarea" blank
+      liftJSM importSimpleMdeJs
+      txtArea <- fst <$> elClass' "textarea" "simplemde-textarea" blank
       let mdeEl = _element_raw txtArea
       -- simpleMDEObj :: JSVal
       simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
-      -- (fooEvt, triggerFoo) <- newTriggerEvent
-      -- dynText  =<< holdDyn "" ("Custom event has triggered! " <$ fooEvt)
-
-      -- triggerFoo :: a -> IO ()
-      -- liftIO $ triggerFoo ()
 
       liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) ("hello world" :: Text)
       liftJSM $ simpleMDEObj ! ("codemirror"::Text) ^. js2
@@ -234,10 +223,10 @@ simpleMDEWidget = do
         (eval ("(function() {console.log('on change')})"::Text))
 
       let codemirror = simpleMDEObj ! ("codemirror"::Text)
-      let parseEvent = \e -> (return () :: JSM ())
+      let parseEvent e = return () :: JSM ()
 
-      changeEvent <- getElementEvent "change" parseEvent codemirror
-      return changeEvent
+      getElementEvent "change" parseEvent codemirror
+
 
 -- adapted from https://github.com/ConferHealth/reflex-stripe/blob/1842b100e6275bbb343ed9be4161bb8821299f80/src/Reflex/Stripe/Elements/Types.hs#L186 courtesy of dridus
 getElementEvent :: (MonadJSM m, TriggerEvent t m, MakeObject el) => Text -> (JSVal -> JSM a) -> el -> m (Event t a)
