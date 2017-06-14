@@ -1,0 +1,6 @@
+[submodule "simple-mde/reflex-platform"]
+	path = simple-mde/reflex-platform
+	url = https://github.com/reflex-frp/reflex-platform.git
+[submodule "simple-mde/jslib/simplemde-markdown-editor"]
+	path = simple-mde/jslib/simplemde-markdown-editor
+	url = git@github.com:sparksuite/simplemde-markdown-editor.git

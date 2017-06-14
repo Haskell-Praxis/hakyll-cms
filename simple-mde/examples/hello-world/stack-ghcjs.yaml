@@ -1,0 +1,72 @@
+resolver: lts-7.19
+compiler: ghcjs-0.2.1.9007008_ghc-8.0.1
+compiler-check: match-exact
+
+setup-info:
+  ghcjs:
+    source:
+      ghcjs-0.2.1.9007008_ghc-8.0.1:
+          url: http://ghcjs.tolysz.org/ghc-8.0-2016-11-07-lts-7.8-9007008.tar.gz
+          sha1: 190300a3725cde44b2a08be9ef829f2077bf8825
+
+packages:
+- location: '.'
+- location: './../..'
+  extra-dep: true
+- location:
+    git: https://github.com/reflex-frp/reflex
+    commit: 2fe0f566f8d6b6eceb178a85516643390111bb83
+    # Latest develop comment at the time of writing
+  extra-dep: true
+- location:
+    git: https://github.com/reflex-frp/reflex-dom
+    commit: 706ab47df9729bdc5c4ac3f4d8dfd4661d9f6e1a
+    # Latest develop comment at the time of writing
+  subdirs:
+    - reflex-dom-core
+  extra-dep: true
+
+extra-deps:
+- bifunctors-5.4.2
+- bimap-0.3.3
+- contravariant-1.4
+- dependent-map-0.2.4.0
+- dependent-sum-template-0.0.0.5
+- exception-transformers-0.4.0.5
+- ghcjs-dom-0.8.0.0
+- haskell-src-exts-1.18.2
+- haskell-src-meta-0.7.0.1
+- jsaddle-0.8.3.2
+- jsaddle-warp-0.8.3.1
+- lens-4.15.2
+- monad-control-1.0.1.0
+- prim-uniq-0.1.0.1
+- ref-tf-0.4.0.1
+- semigroupoids-5.2
+- these-0.7.3
+- unbounded-delays-0.1.1.0
+- zenc-0.1.1
+- QuickCheck-2.9.2
+- base64-bytestring-1.0.0.1
+- cabal-doctest-1.0.2
+- comonad-5.0.1
+- cpphs-1.20.5
+- distributive-0.5.2
+- free-4.12.4
+- ghcjs-dom-jsffi-0.8.0.0
+- kan-extensions-5.0.2
+- keys-3.11
+- profunctors-5.2
+- th-extras-0.0.0.4
+- th-orphans-0.13.3
+- transformers-base-0.4.4
+- vector-instances-3.4
+- void-0.7.2
+- adjunctions-4.3
+- pointed-5
+- tf-random-0.5
+- th-lift-0.7.7
+- th-lift-instances-0.1.11
+- th-reify-many-0.1.6
+- safe-0.3.14
+- th-expand-syns-0.4.3.0
