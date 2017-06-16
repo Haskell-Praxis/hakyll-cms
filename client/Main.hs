@@ -72,21 +72,22 @@ routedContent = do
   -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
   rec
     r <- route . switchPromptlyDyn =<< holdDyn never views
-    views <- dyn $ ffor r $ \uri -> case (uriPath uri) of
-      "/" -> do
+    views <- dyn $ ffor r $ \uri -> case (uriFragment uri) of
+      Nothing -> do
         text " [ overview ] "
         a <- button "important announcement"
         b <- button "yet another blog entry"
         c <- button "lol, look at what i've found"
 
         return $ leftmost [
-            "a21342io35" <$ a,
-            "bas3dlf456" <$ b,
-            "07dn89s7gf" <$ c
+            "#a21342io35" <$ a,
+            "#bas3dlf456" <$ b,
+            "#07dn89s7gf" <$ c
           ]
-      path -> do
-        let postId = T.tail $ decodeUtf8 path
-        postEditView postId
+      Just postId -> do
+        -- let postId' = T.tail $ decodeUtf8 path
+        let postId' = decodeUtf8 postId
+        postEditView postId'
   return ()
 
 -- viewA :: MonadWidget t m => m (Event t Text)
