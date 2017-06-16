@@ -29,7 +29,8 @@ import           Reflex.Dom.Builder.Immediate
 import           Reflex.Dom.Contrib.MonadRouted -- we probably only need one of these
 import           Reflex.Dom.Contrib.Router -- we probably only need one of these
 import           URI.ByteString
-import            Data.Text.Encoding              (decodeUtf8)
+import           Data.Text.Encoding               (decodeUtf8)
+import           Data.Monoid                      ((<>))
 
 
 
@@ -85,11 +86,7 @@ routedContent = do
           ]
       path -> do
         let postId = T.tail $ decodeUtf8 path
-        text postId
-        a <- button "toOverview"
-        b <- button "Back"
-        performEvent_ $  goBack <$ b
-        return ("/" <$ a)
+        postEditView postId
   return ()
 
 -- viewA :: MonadWidget t m => m (Event t Text)
@@ -98,21 +95,18 @@ routedContent = do
 --   gotoB <- button "GoTo B"
 --   return $ fmap (const "B") gotoB
 
-postEditView :: (
-    MonadJSM m,
-    DomBuilder t m,
-    DomBuilderSpace m ~ GhcjsDomSpace,
-    TriggerEvent t m,
-    MonadFix m,
-    MonadHold t m,
-    PostBuild t m
-  ) => m ()
-postEditView = do
+postEditView :: MonadWidget t m => Text -> m (Event t Text)
+postEditView postId = do
+  el "div" $ text $ "postId: " <> postId
   mdeChangeEvent <- simpleMDEWidget
   (ct :: Dynamic t Int) <- R.count mdeChangeEvent
   display ct
   text ("\n" :: Text)
   dynText =<< holdDyn "" mdeChangeEvent
+  a <- button "toOverview"
+  b <- button "Back"
+  performEvent_ $  goBack <$ b
+  return ("/" <$ a)
   -- Reflex.Dom.Builder.Class.DomBuilderSpace m’
   --                with ‘Reflex.Dom.Builder.Immediate.GhcjsDomSpace’
 
