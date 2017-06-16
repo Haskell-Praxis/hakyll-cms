@@ -73,6 +73,17 @@ routerExample = do
             "/A" -> viewA
             "/B" -> viewB
             "/C" -> viewC
+            "/" -> do
+                text " [ overview ] "
+                a <- button "A"
+                b <- button "B"
+                c <- button "C"
+
+                return $ leftmost [
+                    "A" <$ a, 
+                    "B" <$ b,
+                    "C" <$ c
+                  ]
             -- ["all"] -> do text "[ overview ]"; return never
             _   -> do
                 text "404!"
