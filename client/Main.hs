@@ -45,7 +45,7 @@ main = run 8081 $ mainWidgetWithCss simpleMdeCss app
 app :: forall t m. MonadWidget t m => m ()
 app = do
     el "div" $ text "[ title bar ]"
-    el "div" $ routerExample
+    el "div" $ routedContent
     return ()
 
 
@@ -66,8 +66,8 @@ app = do
   -- pathL?
   -- queryL? allows using query-pairs
 
-routerExample :: MonadWidget t m => m ()
-routerExample = do
+routedContent :: MonadWidget t m => m ()
+routedContent = do
   -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
   rec
     r <- route . switchPromptlyDyn =<< holdDyn never views
@@ -97,77 +97,6 @@ routerExample = do
 --   el "div" $ text "view A"
 --   gotoB <- button "GoTo B"
 --   return $ fmap (const "B") gotoB
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- page :: (
---     MonadJSM m,
---     DomBuilder t m,
---     DomBuilderSpace m ~ GhcjsDomSpace,
---     TriggerEvent t m,
---     MonadFix m,
---     MonadHold t m,
---     PostBuild t m
---   ) => m ()
-page :: forall t m. MonadWidget t m => m ()
-page = do
-  el "div" $ text "[title bar?]"
-  el "div" $ routedContent
-  return ()
-
-basePath :: Text
-basePath = ""
-
-routedContent :: forall t m. MonadWidget t m => m ()
--- routedContent :: (
---     MonadJSM m,
---     DomBuilder t m,
---     DomBuilderSpace m ~ GhcjsDomSpace,
---     TriggerEvent t m,
---     MonadFix m,
---     MonadHold t m,
---     PostBuild t m
---
---     -- MonadWidgetContraints t m
---
---   ) => m ()
-routedContent = do
-    rec
-        let routingUpdates = never
-        -- r <- partialPathRoute basePath routingUpdates
-    --     dynText $ fmap T.unlines r
-
-        -- r <- partialPathRoute basePath . switchPromptlyDyn =<< holdDyn never views
-        -- views <- dyn $ ffor r $ pathToView
-    return ()
-
-
-pathToView path = case path of
-  [""] -> text "[ overview over all posts ]"
-  ["new"] -> text "[ new post ]"
-  [postId] -> text "[ edit post ]"
-  _ -> text "[ 404 ]"
 
 postEditView :: (
     MonadJSM m,
