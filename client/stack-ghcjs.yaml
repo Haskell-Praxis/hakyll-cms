@@ -29,6 +29,7 @@ packages:
     git: https://github.com/reflex-frp/reflex-dom-contrib
     commit: 9d18e25f6d962ca1efeb832ae920b8fc38817928
     # Latest develop comment at the time of writing
+  extra-dep: true
 
 
 extra-deps:
