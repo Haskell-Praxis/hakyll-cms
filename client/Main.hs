@@ -32,6 +32,7 @@ import           Data.Text.Encoding               (decodeUtf8)
 import           Data.Monoid                      ((<>))
 
 
+import           Reflex.Dom.SemanticUI
 
 import           Language.Javascript.JSaddle.Types
 import           Control.Monad.Fix
