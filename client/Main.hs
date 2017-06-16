@@ -85,32 +85,18 @@ routerExample = do
           ]
       path -> do
         let postId = T.tail $ decodeUtf8 path
-        text "postId: "
         text postId
-        a <- button "A"
+        a <- button "toOverview"
         b <- button "Back"
         performEvent_ $  goBack <$ b
-        return ("A" <$ a)
+        return ("/" <$ a)
   return ()
 
-viewA :: MonadWidget t m => m (Event t Text)
-viewA = do
-  el "div" $ text "view A"
-  gotoB <- button "GoTo B"
-  return $ fmap (const "B") gotoB
-
-viewB :: MonadWidget t m => m (Event t Text)
-viewB = do
-  el "div" $ text "view B"
-  gotoC <- button "GoTo C"
-  return $ fmap (const "C") gotoC
-
-viewC :: MonadWidget t m => m (Event t Text)
-viewC = do
-  el "div" $ text "view C"
-  gotoA <- button "GoTo A"
-  return $ fmap (const "A") gotoA
-
+-- viewA :: MonadWidget t m => m (Event t Text)
+-- viewA = do
+--   el "div" $ text "view A"
+--   gotoB <- button "GoTo B"
+--   return $ fmap (const "B") gotoB
 
 
 
