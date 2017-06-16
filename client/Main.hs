@@ -68,28 +68,30 @@ app = do
 
 routerExample :: MonadWidget t m => m ()
 routerExample = do
-    -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
-    rec r <- route . switchPromptlyDyn =<< holdDyn never views
-        views <- dyn $ ffor r $ \uri -> case (uriPath uri) of
-            "/" -> do
-                text " [ overview ] "
-                a <- button "important announcement"
-                b <- button "yet another blog entry"
-                c <- button "lol, look at what i've found"
+  -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
+  rec
+    r <- route . switchPromptlyDyn =<< holdDyn never views
+    views <- dyn $ ffor r $ \uri -> case (uriPath uri) of
+      "/" -> do
+        text " [ overview ] "
+        a <- button "important announcement"
+        b <- button "yet another blog entry"
+        c <- button "lol, look at what i've found"
 
-                return $ leftmost [
-                    "a21342io35" <$ a,
-                    "bas3dlf456" <$ b,
-                    "07dn89s7gf" <$ c
-                  ]
-            path -> do
-              let postId = T.tail $ decodeUtf8 path
-              text postId
-              a <- button "A"
-              b <- button "Back"
-              performEvent_ $  goBack <$ b
-              return ("A" <$ a)
-    return ()
+        return $ leftmost [
+            "a21342io35" <$ a,
+            "bas3dlf456" <$ b,
+            "07dn89s7gf" <$ c
+          ]
+      path -> do
+        let postId = T.tail $ decodeUtf8 path
+        text "postId: "
+        text postId
+        a <- button "A"
+        b <- button "Back"
+        performEvent_ $  goBack <$ b
+        return ("A" <$ a)
+  return ()
 
 viewA :: MonadWidget t m => m (Event t Text)
 viewA = do
