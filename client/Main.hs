@@ -28,6 +28,9 @@ import           Reflex.Dom.Builder.Immediate
 
 import           Reflex.Dom.Contrib.MonadRouted -- we probably only need one of these
 import           Reflex.Dom.Contrib.Router -- we probably only need one of these
+import           URI.ByteString
+
+
 
 import           Language.Javascript.JSaddle.Types
 import           Control.Monad.Fix
@@ -38,24 +41,39 @@ main :: IO ()
 -- main = run 8081 $ mainWidgetWithCss simpleMdeCss page
 main = run 8081 $ mainWidgetWithCss simpleMdeCss app
 
-
-
--- TODO Use the right constraints in Router module
-type App t m = MonadWidget t m
-
-app :: App t m => m ()
+app :: forall t m. MonadWidget t m => m ()
 app = do
-    el "h2" $ text "reflex-dom-contrib examples"
+    el "div" $ text "[ title bar ]"
     el "div" $ routerExample
     return ()
 
+
+  --   >>> parseURI strictURIParserOptions "http://www.example.org/foo?bar=baz#quux"
+  -- Right (URI {
+  --   uriScheme = Scheme {schemeBS = "http"},
+  --   uriAuthority = Just (Authority {
+  --     authorityUserInfo = Nothing,
+  --     authorityHost = Host {hostBS = "www.example.org"},
+  --     authorityPort = Nothing
+  --   }),
+  --   uriPath = "/foo",
+  --   uriQuery = Query {
+  --     queryPairs = [("bar","baz")]
+  --   },
+  --   uriFragment = Just "quux"
+  -- })
+  -- pathL?
+  -- queryL? allows using query-pairs
+
 routerExample :: MonadWidget t m => m ()
 routerExample = do
-    rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
-        views <- dyn $ ffor r $ \case
-            ["A"] -> viewA
-            ["B"] -> viewB
-            ["C"] -> viewC
+    -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
+    rec r <- route . switchPromptlyDyn =<< holdDyn never views
+        views <- dyn $ ffor r $ \uri -> case (uriPath uri) of
+            "/A" -> viewA
+            "/B" -> viewB
+            "/C" -> viewC
+            -- ["all"] -> do text "[ overview ]"; return never
             _   -> do
                 text "404!"
                 a <- button "A"
