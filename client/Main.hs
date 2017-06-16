@@ -26,7 +26,6 @@ import           Reflex.Dom.Widget.Basic
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Builder.Immediate
 
-import           Reflex.Dom.Contrib.MonadRouted -- we probably only need one of these
 import           Reflex.Dom.Contrib.Router -- we probably only need one of these
 import           URI.ByteString
 import           Data.Text.Encoding               (decodeUtf8)
