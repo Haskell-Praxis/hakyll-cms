@@ -25,26 +25,31 @@ import           Reflex.Dom.SimpleMDE
 import           Reflex.Dom.Widget.Basic
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Builder.Immediate
-
-import           Reflex.Dom.Contrib.Router -- we probably only need one of these
-import           URI.ByteString                   hiding (uriFragment)
-import           URI.ByteString                   as UBS
-import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
-import           Data.Monoid                      ((<>))
-
-import           Hakyll.CMS.API
-import           Hakyll.CMS.Types                  as Types
-import           Servant.API
-import           Servant.Client
-import           Data.Proxy
-
-import           Reflex.Dom.SemanticUI
-
 import           Language.Javascript.JSaddle.Types
 import           Control.Monad.Fix
 import           Data.Text                          (Text)
 import           Data.ByteString                    (ByteString)
 import           Data.Text                          as T
+
+-- for routing
+import           Reflex.Dom.Contrib.Router
+import           URI.ByteString                   hiding (uriFragment)
+import           URI.ByteString                   as UBS
+import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
+import           Data.Monoid                      ((<>))
+
+-- for querying the server
+import           Hakyll.CMS.API
+import           Hakyll.CMS.Types                  as Types
+import           Servant.API
+import           Servant.Client
+import           Data.Proxy
+import           Network.HTTP.Client               (Manager, newManager, defaultManagerSettings)
+import           Control.Monad.Trans.Except        (ExceptT, runExceptT)
+
+-- for styling
+import           Reflex.Dom.SemanticUI
+
 
 
 api :: Proxy API
