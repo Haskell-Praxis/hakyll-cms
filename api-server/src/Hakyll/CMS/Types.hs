@@ -1,19 +1,24 @@
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Hakyll.CMS.Types
-    ( NewPost
-    , PostSummary
-    , Post
+    ( PostSummary(..)
+    , Post(..)
+    , NewPost(..)
     , Title
-    , Id
     , Author
     , Tag
     )
     where
 
 import           Data.Aeson
-import           Data.Text
+import           Data.Aeson.TH
+import qualified Data.Char      as Char
+import           Data.Functor
+import           Data.Sequences
+import           Data.Text      (Text)
 import           Data.Time
 import           GHC.Generics
 
@@ -23,74 +28,48 @@ type Author = Text
 
 type Title = Text
 
-type Id = Text
-
-data NewPost =
-    NewPost
-      { newTitle   :: Title
-      , newAuthor  :: Author
-      , newTags    :: [Tag]
-      , newCreated :: UTCTime
-      , newContent :: Text
-      }
-
-instance ToJSON NewPost where
-    toJSON newPost = object
-        [ "title"    .= newTitle   newPost
-        , "author"   .= newAuthor  newPost
-        , "tags"     .= newTags    newPost
-        , "created"  .= newCreated newPost
-        , "content"  .= newContent newPost
-        ]
-
-instance FromJSON NewPost where
-    parseJSON (Object o) =
-        NewPost
-            <$> o .: "title"
-            <*> o .: "author"
-            <*> o .: "tags"
-            <*> o .: "created"
-            <*> o .: "content"
-
 data PostSummary =
     PostSummary
-      { summaryId      :: Id
-      , summaryTitle   :: Title
-      , summaryAuthor  :: Author
-      , summaryTags    :: [Tag]
-      , summaryCreated :: UTCTime
-      }
-      deriving (Generic)
+        { sumTitle  :: Title
+        , sumAuthor :: Author
+        , sumTags   :: [Tag]
+        , sumDate   :: UTCTime
+        , sumTeaser :: Text
+        }
 
-instance ToJSON PostSummary where
-    toJSON summary = object
-        [ "id" .= summaryId summary
-        , "title" .= summaryTitle summary
-        , "author" .= summaryAuthor summary
-        , "tags" .= summaryTags summary
-        , "created" .= summaryCreated summary
-        ]
-
-instance FromJSON PostSummary where
-    parseJSON (Object o) =
-        PostSummary
-            <$> o .: "id"
-            <*> o .: "title"
-            <*> o .: "author"
-            <*> o .: "tags"
-            <*> o .: "created"
+$(deriveJSON defaultOptions{fieldLabelModifier = drop 3, constructorTagModifier = fmap Char.toLower} ''PostSummary)
 
 data Post =
     Post
-      { id      :: Id
-      , title   :: Title
-      , author  :: Author
-      , tags    :: [Tag]
-      , created :: UTCTime
-      , content :: Text
-      }
-      deriving (Generic)
+        { title   :: Title
+        , author  :: Author
+        , tags    :: [Tag]
+        , content :: Text
+        , date    :: UTCTime
+        }
+        deriving (Generic)
 
 instance ToJSON Post
 
 instance FromJSON Post
+
+data NewPost =
+    NewPost
+        { newTitle   :: Title
+        , newAuthor  :: Author
+        , newTags    :: [Tag]
+        , newContent :: Text
+        }
+
+
+$(deriveJSON defaultOptions{fieldLabelModifier = drop 3, constructorTagModifier = fmap Char.toLower} ''NewPost)
+
+getSummary :: Post -> PostSummary
+getSummary post =
+    PostSummary
+        { sumTitle = title post
+        , sumAuthor = author post
+        , sumTags = tags post
+        , sumDate = date post
+        , sumTeaser = take 200 (content post)
+        }

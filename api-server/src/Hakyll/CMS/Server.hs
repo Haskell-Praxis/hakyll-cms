@@ -3,7 +3,9 @@ module Hakyll.CMS.Server
     )
     where
 
+import           Cases
 import           Data.Text
+import           Data.Time.Format
 import           Hakyll.CMS.API
 import           Hakyll.CMS.Types
 import qualified Hakyll.CMS.Types as Types
@@ -13,7 +15,10 @@ server :: Server API
 server = listPosts :<|> createPost :<|> postServer
 
 createPost :: NewPost -> Handler ()
-createPost = undefined
+createPost newPost = do
+    undefined
+    where
+        getTitle = snakify $ newTitle newPost
 
 listPosts :: Handler [PostSummary]
 listPosts = undefined

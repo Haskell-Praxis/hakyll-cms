@@ -4,6 +4,7 @@
 module Hakyll.CMS.API
     ( API
     , PostAPI
+    , Id
     )
     where
 
@@ -13,6 +14,8 @@ import           Data.Time
 import           Hakyll.CMS.Types hiding (Post)
 import qualified Hakyll.CMS.Types as Types
 import           Servant.API
+
+type Id = Text
 
 type API =
          ListPosts
