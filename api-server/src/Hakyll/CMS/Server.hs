@@ -21,6 +21,12 @@ import qualified Hakyll.CMS.Types       as Types
 import           Prelude                (maybe, undefined, ($))
 import           Servant
 
+api :: Proxy API
+api = Proxy
+
+server :: Application
+server = serve api apiHandler
+
 posts :: MonadIO m => m (Map Id Types.Post)
 posts = do
     time <- liftIO getCurrentTime
@@ -45,8 +51,8 @@ getId title date =
     in
         titlePart <> "_" <> datePart
 
-server :: Server API
-server = listPosts :<|> createPost :<|> postServer
+apiHandler :: Server API
+apiHandler = listPosts :<|> createPost :<|> postServer
 
 createPost :: NewPost -> Handler ()
 createPost newPost = throwError err500
