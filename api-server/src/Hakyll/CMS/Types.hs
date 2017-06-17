@@ -40,6 +40,7 @@ data PostSummary =
         , sumDate   :: UTCTime
         , sumTeaser :: Text
         }
+        deriving (Show)
 
 $(deriveJSON defaultOptions{fieldLabelModifier = fmap Char.toLower . drop 3, constructorTagModifier = fmap Char.toLower} ''PostSummary)
 
@@ -64,6 +65,7 @@ data NewPost =
         , newTags    :: [Tag]
         , newContent :: Text
         }
+        deriving (Show)
 
 
 $(deriveJSON defaultOptions{fieldLabelModifier = drop 3, constructorTagModifier = fmap Char.toLower} ''NewPost)
