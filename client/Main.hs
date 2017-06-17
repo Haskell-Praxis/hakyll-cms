@@ -30,6 +30,7 @@ import           Control.Monad.Fix
 import           Data.Text                          (Text)
 import           Data.ByteString                    (ByteString)
 import           Data.Text                          as T
+import           Control.Monad.IO.Class             (liftIO)
 
 -- for routing
 import           Reflex.Dom.Contrib.Router
