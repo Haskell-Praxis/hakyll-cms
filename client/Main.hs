@@ -17,7 +17,7 @@
 module Main where
 
 import           Language.Javascript.JSaddle.Warp (run)
-import           Reflex
+import           Reflex                           hiding (count)
 import           Reflex                           as R
 import           Reflex.Dom.Old                   (MonadWidget)
 import           Reflex.Dom.Main                  (mainWidgetWithCss)
@@ -27,7 +27,7 @@ import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Builder.Immediate
 
 import           Reflex.Dom.Contrib.Router -- we probably only need one of these
-import           URI.ByteString
+import           URI.ByteString                   hiding (uriFragment)
 import           URI.ByteString                   as UBS
 import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
 import           Data.Monoid                      ((<>))
@@ -72,12 +72,12 @@ main :: IO ()
 main = run 8081 $ mainWidgetWithCss css app
 
 css :: ByteString
-css = (encodeUtf8 semanticCSS) <> simpleMdeCss
+css = encodeUtf8 semanticCSS <> simpleMdeCss
 
 app :: forall t m. MonadWidget t m => m ()
 app = do
     el "div" $ text "[ title bar ]"
-    el "div" $ routedContent
+    el "div" routedContent
     return ()
 
 
@@ -103,7 +103,7 @@ routedContent = do
   -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
   rec
     r <- route . switchPromptlyDyn =<< holdDyn never views
-    views <- dyn $ ffor r $ \uri -> case (UBS.uriFragment uri) of
+    views <- dyn $ ffor r $ \uri -> case UBS.uriFragment uri of
       Nothing -> do
         text " [ overview ] "
         a <- button "important announcement"
