@@ -11,6 +11,7 @@ module Hakyll.CMS.Types
     , Author
     , Tag
     , getSummary
+    , Id
     )
     where
 
@@ -32,9 +33,12 @@ type Author = Text
 
 type Title = Text
 
+type Id = Text
+
 data PostSummary =
     PostSummary
-        { sumTitle  :: Title
+        { sumId     :: Id
+        , sumTitle  :: Title
         , sumAuthor :: Author
         , sumTags   :: [Tag]
         , sumDate   :: UTCTime
@@ -70,10 +74,11 @@ data NewPost =
 
 $(deriveJSON defaultOptions{fieldLabelModifier = drop 3, constructorTagModifier = fmap Char.toLower} ''NewPost)
 
-getSummary :: Post -> PostSummary
-getSummary post =
+getSummary :: Id -> Post -> PostSummary
+getSummary id post =
     PostSummary
-        { sumTitle = title post
+        { sumId = id
+        , sumTitle = title post
         , sumAuthor = author post
         , sumTags = tags post
         , sumDate = date post

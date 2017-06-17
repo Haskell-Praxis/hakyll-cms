@@ -15,6 +15,7 @@ import           Data.Sequences         hiding (pack)
 import           Data.Text
 import           Data.Time
 import           Data.Time.Format
+import           Data.Tuple
 import           Hakyll.CMS.API
 import           Hakyll.CMS.Types
 import qualified Hakyll.CMS.Types       as Types
@@ -60,7 +61,7 @@ createPost newPost = throwError err500
 listPosts :: Handler [PostSummary]
 listPosts = do
     p <- posts
-    return $ elems $ fmap getSummary p
+    return $ fmap (uncurry getSummary) $ toList p
 
 postServer :: Id -> Server PostAPI
 postServer id = getPost id :<|> updatePost id :<|> deletePost id
