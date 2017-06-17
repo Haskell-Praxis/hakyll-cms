@@ -1,16 +1,16 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
+-- {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RecursiveDo               #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
-{-# LANGUAGE TypeFamilies              #-}
+-- {-# LANGUAGE TypeFamilies              #-}
 
+-- {-# LANGUAGE ConstraintKinds #-}
+-- {-# LANGUAGE FlexibleContexts #-}
+-- {-# LANGUAGE LambdaCase #-}
+-- {-# LANGUAGE RankNTypes #-}
 
--- from routing example TODO deletme
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE RankNTypes #-}
-
+-- {-# LANGUAGE DataKinds     #-}
+-- {-# LANGUAGE TypeOperators #-}
 
 
 
