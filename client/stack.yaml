@@ -21,6 +21,11 @@ packages:
     commit: 9d18e25f6d962ca1efeb832ae920b8fc38817928
     # Latest develop comment at the time of writing
   extra-dep: true
+- location:
+    git: https://github.com/reflex-frp/reflex-dom-semui
+    commit: d612750d37e57aeb89dc0dca5dd76826402e84d4
+    # Latest develop comment at the time of writing
+  extra-dep: true
 
 extra-deps:
 - ghcjs-dom-0.8.0.0

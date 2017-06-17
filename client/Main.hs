@@ -28,19 +28,24 @@ import           Reflex.Dom.Builder.Immediate
 
 import           Reflex.Dom.Contrib.Router -- we probably only need one of these
 import           URI.ByteString
-import           Data.Text.Encoding               (decodeUtf8)
+import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
 import           Data.Monoid                      ((<>))
 
 
+import           Reflex.Dom.SemanticUI
 
 import           Language.Javascript.JSaddle.Types
 import           Control.Monad.Fix
 import           Data.Text                          (Text)
+import           Data.ByteString                    (ByteString)
 import           Data.Text                          as T
 
 main :: IO ()
 -- main = run 8081 $ mainWidgetWithCss simpleMdeCss page
-main = run 8081 $ mainWidgetWithCss simpleMdeCss app
+main = run 8081 $ mainWidgetWithCss css app
+
+css :: ByteString
+css = (encodeUtf8 semanticCSS) <> simpleMdeCss
 
 app :: forall t m. MonadWidget t m => m ()
 app = do
