@@ -22,6 +22,8 @@ import           Data.Text      (Text)
 import           Data.Time
 import           GHC.Generics
 
+import           Text.Show      (Show)
+
 type Tag = Text
 
 type Author = Text
@@ -47,7 +49,7 @@ data Post =
         , content :: Text
         , date    :: UTCTime
         }
-        deriving (Generic)
+        deriving (Generic, Show)
 
 instance ToJSON Post
 
