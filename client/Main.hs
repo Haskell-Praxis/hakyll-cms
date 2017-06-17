@@ -69,10 +69,10 @@ deletePost id =
   let _ :<|> _ :<|> deletePost' = postApi id
   in deletePost'
 
-foo :: IO ()
-foo = do
+getPostDemo :: IO ()
+getPostDemo = do
   manager <- newManager defaultManagerSettings
-  res <- runExceptT $ getPost "123" manager (BaseUrl Http "localhost" 8081 "")
+  res <- runExceptT $ getPost "123" manager (BaseUrl Http "localhost" 8080 "")
   case res of
     Left err -> putStrLn $ "Error: " ++ show err
     Right post -> print post
@@ -89,6 +89,7 @@ app :: forall t m. MonadWidget t m => m ()
 app = do
     el "div" $ text "[ title bar ]"
     el "div" routedContent
+    liftIO getPostDemo
     return ()
 
 
