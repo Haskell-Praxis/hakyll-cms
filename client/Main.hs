@@ -73,7 +73,7 @@ deletePost id =
 getPostDemo :: IO ()
 getPostDemo = do
   manager <- newManager defaultManagerSettings
-  res <- runExceptT $ getPost "123" manager (BaseUrl Http "localhost" 8080 "")
+  res <- runExceptT $ getPost "testing-1_2017-01-08" manager (BaseUrl Http "localhost" 8080 "")
   case res of
     Left err -> putStrLn $ "Error: " ++ show err
     Right post -> print post
