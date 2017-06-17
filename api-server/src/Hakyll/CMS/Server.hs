@@ -32,7 +32,7 @@ posts = do
     time <- liftIO getCurrentTime
     return
         (Data.Map.fromList
-            [ ( ""
+            [ ( "testing-1_2017-01-08"
               , Types.Post
                   { Types.title = "Testing 1"
                   , author = "Sam Dent"
