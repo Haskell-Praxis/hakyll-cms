@@ -10,6 +10,7 @@ module Hakyll.CMS.Types
     , Title
     , Author
     , Tag
+    , getSummary
     )
     where
 
