@@ -14,16 +14,17 @@ module Hakyll.CMS.Types
     )
     where
 
+import           Control.Category
 import           Data.Aeson
 import           Data.Aeson.TH
-import qualified Data.Char      as Char
+import qualified Data.Char        as Char
 import           Data.Functor
 import           Data.Sequences
-import           Data.Text      (Text)
+import           Data.Text        (Text)
 import           Data.Time
 import           GHC.Generics
 
-import           Text.Show      (Show)
+import           Text.Show        (Show)
 
 type Tag = Text
 
@@ -40,7 +41,7 @@ data PostSummary =
         , sumTeaser :: Text
         }
 
-$(deriveJSON defaultOptions{fieldLabelModifier = drop 3, constructorTagModifier = fmap Char.toLower} ''PostSummary)
+$(deriveJSON defaultOptions{fieldLabelModifier = fmap Char.toLower . drop 3, constructorTagModifier = fmap Char.toLower} ''PostSummary)
 
 data Post =
     Post
