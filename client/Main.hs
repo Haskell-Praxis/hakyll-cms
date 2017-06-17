@@ -28,9 +28,15 @@ import           Reflex.Dom.Builder.Immediate
 
 import           Reflex.Dom.Contrib.Router -- we probably only need one of these
 import           URI.ByteString
+import           URI.ByteString                   as UBS
 import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
 import           Data.Monoid                      ((<>))
 
+import           Hakyll.CMS.API
+import           Hakyll.CMS.Types                  as Types
+import           Servant.API
+import           Servant.Client
+import           Data.Proxy
 
 import           Reflex.Dom.SemanticUI
 
@@ -39,6 +45,27 @@ import           Control.Monad.Fix
 import           Data.Text                          (Text)
 import           Data.ByteString                    (ByteString)
 import           Data.Text                          as T
+
+
+api :: Proxy API
+api = Proxy
+
+listPosts :<|> createPost :<|> postApi = client api
+
+getPost id =
+  let getPost' :<|> _ :<|> _ = postApi id
+  in getPost'
+
+putPost id =
+  let _ :<|> putPost' :<|> _ = postApi id
+  in putPost'
+
+deletePost id =
+  let _ :<|> _ :<|> deletePost' = postApi id
+  in deletePost'
+
+
+
 
 main :: IO ()
 -- main = run 8081 $ mainWidgetWithCss simpleMdeCss page
@@ -76,7 +103,7 @@ routedContent = do
   -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
   rec
     r <- route . switchPromptlyDyn =<< holdDyn never views
-    views <- dyn $ ffor r $ \uri -> case (uriFragment uri) of
+    views <- dyn $ ffor r $ \uri -> case (UBS.uriFragment uri) of
       Nothing -> do
         text " [ overview ] "
         a <- button "important announcement"

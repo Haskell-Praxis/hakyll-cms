@@ -13,6 +13,8 @@ packages:
 - location: '.'
 - location: './../simple-mde'
   extra-dep: true
+- location: './../api-server'
+  extra-dep: true
 - location:
     git: https://github.com/reflex-frp/reflex
     commit: 2fe0f566f8d6b6eceb178a85516643390111bb83
