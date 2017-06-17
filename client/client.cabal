@@ -23,4 +23,7 @@ executable client
                      , transformers >= 0.5.2.0 && < 0.6
                      , simple-mde
                      , api-server
+  if impl(ghcjs)
+    build-depends:     ghcjs-base >= 0.2.0.0 && <0.3
+
   default-language:    Haskell2010
