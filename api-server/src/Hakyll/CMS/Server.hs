@@ -10,12 +10,14 @@ module Hakyll.CMS.Server
 import           Cases
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Data.Bool
 import           Data.Eq
 import           Data.Function
 import           Data.Map
 import           Data.Maybe
 import           Data.Monoid
 import           Data.Sequences         hiding (pack)
+import           Data.String            (String)
 import           Data.Text
 import           Data.Time
 import           Data.Time.Format
@@ -32,22 +34,25 @@ api = Proxy
 server :: Application
 server = serve api apiHandler
 
-posts :: MonadIO m => m (Map Id Types.Post)
-posts = do
-    time <- liftIO getCurrentTime
-    return
-        (Data.Map.fromList
-            [ ( "testing-1_2017-01-08"
-              , Types.Post
-                  { Types.title = "Testing 1"
-                  , author = "Sam Dent"
-                  , tags = ["tag1", "tag2"]
-                  , content = "Lorem Ipsum 1"
-                  , date = time
-                  }
-              )
-            ]
-        )
+createDate :: String -> UTCTime
+createDate = parseTimeOrError False defaultTimeLocale "%F"
+
+postList :: [Types.Post]
+postList =
+    [ Types.Post
+        { Types.title = "Testing 1"
+        , author = "Sam Dent"
+        , tags = ["tag1", "tag2"]
+        , content = "Lorem Ipsum 1"
+        , date = createDate "2017-01-08"
+        }
+    ]
+
+posts :: Map Id Types.Post
+posts =
+    Data.Map.fromList $ fmap toPair postList
+    where
+        toPair post = (getId (Types.title post) (date post), post)
 
 getId :: Title -> UTCTime -> Text
 getId title date =
@@ -80,28 +85,24 @@ createPost newPost = do
     return $ addHeader ("/" <> id) post
 
 listPosts :: Handler [PostSummary]
-listPosts = do
-    p <- posts
-    return $ fmap (uncurry getSummary) $ toList p
+listPosts =
+    return $ fmap (uncurry getSummary) $ toList posts
 
 postServer :: Id -> Server PostAPI
 postServer id = getPost id :<|> updatePost id :<|> deletePost id
 
 getPost :: Id -> Handler Types.Post
-getPost id = do
-    p <- posts
-    maybe (throwError err404) return (lookup id p)
+getPost id =
+    maybe (throwError err404) return (lookup id posts)
 
 updatePost :: Id -> Types.Post -> Handler Types.Post
 updatePost id post = do
-    p <- posts
-    oldPost <- maybe (throwError err404) return (lookup id p)
+    oldPost <- maybe (throwError err404) return (lookup id posts)
     when (date oldPost /= date post) $
         throwError err403
     return post
 
 deletePost :: Id -> Handler NoContent
 deletePost id = do
-    p <- posts
-    post <- maybe (throwError err404) return (lookup id p)
+    post <- maybe (throwError err404) return (lookup id posts)
     return NoContent
