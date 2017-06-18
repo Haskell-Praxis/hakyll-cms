@@ -137,16 +137,16 @@ routedContent = do
 
 routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
-      Nothing -> startOverview
-      Just "" -> startOverview
+      Nothing -> overview
+      Just "" -> overview
       Just postId -> do
         -- let postId' = T.tail $ decodeUtf8 path
         let postId' = decodeUtf8 postId
         postEditView postId'
         return ()
 
-startOverview :: MonadWidget t m =>  m ()
-startOverview = do
+overview :: MonadWidget t m =>  m ()
+overview = do
   errOrSummaries <- liftIO getPostSummaries
   summaries <- either
     (\err -> do
