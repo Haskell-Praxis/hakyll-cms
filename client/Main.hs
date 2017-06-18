@@ -160,20 +160,5 @@ postEditView postId = do
   b <- button "Back"
   performEvent_ $  goBack <$ b
   return ("/" <$ a)
-  -- Reflex.Dom.Builder.Class.DomBuilderSpace m’
-  --                with ‘Reflex.Dom.Builder.Immediate.GhcjsDomSpace’
 
--- either use `Router` and code at https://github.com/reflex-frp/reflex-dom-contrib/issues/28
--- or use `MonadRouted`
 
--- Router uses `/` to seperate client-side routing instead of fragment identifiers for some reason
--- we could use `route'` to strip fragment identifiers before handing the route over to `Router` (and add it when reading from it)
-
--- i guess monadrouted is the more complex/advanced of the two and we'd need it if we'd do
--- more complex path manipulation (e.g. relativ path changes, path's processed by nested widgets, etc)
--- it works on path parts.
-
--- nvm, both of these use monadwidget (which is deprecated). We might need to write our own routing.
--- it only appears as constraint though
--- solution: we could simply see which of the following constraints that make up MonadWidgetConstraint
---   are necessary to compile the router https://github.com/reflex-frp/reflex-dom/blob/develop/reflex-dom-core/src/Reflex/Dom/Old.hs#L107
