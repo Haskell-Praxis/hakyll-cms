@@ -137,10 +137,8 @@ routedContent = do
 
 routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
-      Nothing -> do
-        -- renderOverview []
-        startOverview
-        return ()
+      Nothing -> startOverview
+      Just "" -> startOverview
       Just postId -> do
         -- let postId' = T.tail $ decodeUtf8 path
         let postId' = decodeUtf8 postId
