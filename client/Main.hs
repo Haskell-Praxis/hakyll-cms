@@ -1,6 +1,6 @@
 -- {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedStrings         #-}
-{-# LANGUAGE RecursiveDo               #-}
+-- {-# LANGUAGE RecursiveDo               #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
 -- {-# LANGUAGE TypeFamilies              #-}
 
@@ -78,7 +78,7 @@ app :: forall t m. MonadWidget t m => m ()
 app = do
     el "div" $ text "[ title bar ]"
     el "div" routedContent
-    liftIO getPostDemo
+    -- liftIO getPostDemo
     return ()
 
 
@@ -114,9 +114,8 @@ routedContent = do
 routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
       Nothing -> do
-        renderOverview []
-        elAttr' "a" ("href" =: "#1234") $ text "some post"
-        elAttr' "a" ("href" =: "#abc") $ text "another post"
+        -- renderOverview []
+        startOverview
         return ()
       Just postId -> do
         -- let postId' = T.tail $ decodeUtf8 path
@@ -124,27 +123,29 @@ routingMapping uri = case UBS.uriFragment uri of
         postEditView postId'
         return ()
 
-renderFragment :: MonadWidget t m => URIRef Absolute -> m ()
-renderFragment uri = do
-      let fragment = decodeUtf8 $ fromMaybe "" $ UBS.uriFragment uri
-      text fragment
-      return ()
+startOverview :: MonadWidget t m =>  m ()
+startOverview = do
+  errOrSummaries <- liftIO getPostSummaries
+  summaries <- either
+    (\err -> do
+        liftIO $ print ("Posts failed to load" :: Text)
+        -- TODO error popup
+        return []
+      )
+    (\summaries -> return summaries)
+    errOrSummaries
 
-renderOverview :: MonadWidget t m => [PostSummary] -> m (Event t Text)
-renderOverview postSummaries = do
-  -- concatenates click-events to [Event]. needs merging.
-  -- listOfEventStreams <- mapM renderPostSummaryLine postSummaries
-  -- events = mconcat listOfEventStreams
-  -- events = leftmost listOfEventStreams
-  el "ul" $ mapM_ renderPostSummaryLine postSummaries
-  return never
+  el "ul" $
+    mapM_ postSummaryLine summaries
 
-renderPostSummaryLine :: MonadWidget t m => PostSummary -> m (Event t Text)
-renderPostSummaryLine postSummary = el "li" $ do
+  return ()
+
+postSummaryLine :: MonadWidget t m => PostSummary -> m ()
+postSummaryLine postSummary = el "li" $ do
   let postViewFragment = "#" <> sumId postSummary
   (el, _) <- elAttr' "a" ("href" =: postViewFragment) $ text $ sumTitle postSummary
   -- return $ (postViewFragment <$ domEvent Click el)
-  return never
+  return ()
 
 postEditView :: MonadWidget t m => Text -> m (Event t Text)
 postEditView postId = do
