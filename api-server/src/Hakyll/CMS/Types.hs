@@ -72,7 +72,7 @@ data NewPost =
         deriving (Show)
 
 
-$(deriveJSON defaultOptions{fieldLabelModifier = drop 3, constructorTagModifier = fmap Char.toLower} ''NewPost)
+$(deriveJSON defaultOptions{fieldLabelModifier = fmap Char.toLower . drop 3, constructorTagModifier = fmap Char.toLower} ''NewPost)
 
 getSummary :: Id -> Post -> PostSummary
 getSummary id post =
