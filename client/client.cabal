@@ -21,6 +21,7 @@ executable client
                      , servant-client >= 0.8.1 && < 0.9
                      , http-client >= 0.4.31.2 && < 0.5
                      , transformers >= 0.5.2.0 && < 0.6
+                     , containers >= 0.5.7.1 && < 0.6
                      , simple-mde
                      , api-server
   if impl(ghcjs)

@@ -17,7 +17,6 @@
 module Main where
 
 import           Language.Javascript.JSaddle.Warp (run)
-import           Reflex                           hiding (count)
 import           Reflex                           as R
 import           Reflex.Dom.Old                   (MonadWidget)
 import           Reflex.Dom.Main                  (mainWidgetWithCss)
@@ -30,7 +29,12 @@ import           Control.Monad.Fix
 import           Data.Text                          (Text)
 import           Data.ByteString                    (ByteString)
 import           Data.Text                          as T
+import           Data.Map.Lazy                      as Map
 import           Control.Monad.IO.Class             (liftIO)
+
+import           Hakyll.CMS.Types                  as Types
+import           ServerCalls
+import           Data.Maybe
 
 -- for routing
 import           Reflex.Dom.Contrib.Router
@@ -39,45 +43,28 @@ import           URI.ByteString                   as UBS
 import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
 import           Data.Monoid                      ((<>))
 
--- for querying the server
-import           Hakyll.CMS.API
-import           Hakyll.CMS.Types                  as Types
-import           Servant.API
-import           Servant.Client
-import           Data.Proxy
-import           Network.HTTP.Client               (Manager, newManager, defaultManagerSettings)
-import           Control.Monad.Trans.Except        (ExceptT, runExceptT)
 
 -- for styling
 import           Reflex.Dom.SemanticUI
 
 
 
-api :: Proxy API
-api = Proxy
-
-listPosts :<|> createPost :<|> postApi = client api
-
-getPost id =
-  let getPost' :<|> _ :<|> _ = postApi id
-  in getPost'
-
-updatePost id =
-  let _ :<|> updatePost' :<|> _ = postApi id
-  in updatePost'
-
-deletePost id =
-  let _ :<|> _ :<|> deletePost' = postApi id
-  in deletePost'
-
 getPostDemo :: IO ()
 getPostDemo = do
-  manager <- newManager defaultManagerSettings
-  -- res <- runExceptT $ getPost "testing-1_2017-01-08" manager (BaseUrl Http "localhost" 8080 "")
-  res <- runExceptT $ listPosts manager (BaseUrl Http "localhost" 8080 "")
+  res <- getPostSummaries
   case res of
     Left err -> putStrLn $ "Error: " ++ show err
     Right response -> print response
+
+-- intended usage:
+-- - stream of events in to trigger calls
+-- - stream of results and stream of errors out
+
+-- overview:
+-- - stream of [postsummary] in
+-- - stream of refresh button and stream of goto-post out
+
+-- post:
 
 
 main :: IO ()
@@ -114,41 +101,75 @@ app = do
 
 routedContent :: MonadWidget t m => m ()
 routedContent = do
-  -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
-  rec
-    r <- route . switchPromptlyDyn =<< holdDyn never gotoRoute
-    gotoRoute <- dyn $ ffor r routingMapping
+  -- rec
+    -- r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
+    -- gotoRoute <- dyn $ ffor r routingMappingOld -- don't need this. we're using fragment identifiers (i.e. the browser handles clicks on links for us)
+
+  -- browser handles route changes for us, so we don't need to pass in an event to trigger that
+  r <- route never
+  let views = fmap routingMapping r
+  dyn views
   return ()
 
-routingMapping :: MonadWidget t m => URIRef Absolute -> m (Event t Text)
+routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
-      Nothing -> overview
+      Nothing -> do
+        renderOverview []
+        elAttr' "a" ("href" =: "#1234") $ text "some post"
+        elAttr' "a" ("href" =: "#abc") $ text "another post"
+        return ()
       Just postId -> do
         -- let postId' = T.tail $ decodeUtf8 path
         let postId' = decodeUtf8 postId
         postEditView postId'
+        return ()
 
-overview :: MonadWidget t m => m (Event t Text)
-overview = do
-  text " [ overview ] "
-  a <- button "important announcement"
-  b <- button "yet another blog entry"
-  c <- button "lol, look at what i've found"
+renderFragment :: MonadWidget t m => URIRef Absolute -> m ()
+renderFragment uri = do
+      let fragment = decodeUtf8 $ fromMaybe "" $ UBS.uriFragment uri
+      text fragment
+      return ()
 
-  return $ leftmost [
-      "#a21342io35" <$ a,
-      "#bas3dlf456" <$ b,
-      "#07dn89s7gf" <$ c
-    ]
+-- routingMappingOld :: MonadWidget t m => URIRef Absolute -> m (Event t Text)
+-- routingMappingOld uri = case UBS.uriFragment uri of
+--       Nothing -> overview
+--       Just postId -> do
+--         -- let postId' = T.tail $ decodeUtf8 path
+--         let postId' = decodeUtf8 postId
+--         postEditView postId'
+
+
+-- overview :: MonadWidget t m => m (Event t Text)
+-- overview = do
+--   text " [ overview ] "
+--   text " [ loading Posts... ] "
+--   a <- button "important announcement"
+--   b <- button "yet another blog entry"
+--   c <- button "lol, look at what i've found"
+--
+--   return $ leftmost [
+--       "#a21342io35" <$ a,
+--       "#bas3dlf456" <$ b,
+--       "#07dn89s7gf" <$ c
+--     ]
 
 
 
-renderPostSummaryLine :: MonadWidget t m => PostSummary -> m ()
-renderPostSummaryLine postSummary = do
+renderOverview :: MonadWidget t m => [PostSummary] -> m (Event t Text)
+renderOverview postSummaries = do
+  -- concatenates click-events to [Event]. needs merging.
+  -- listOfEventStreams <- mapM renderPostSummaryLine postSummaries
+  -- events = mconcat listOfEventStreams
+  -- events = leftmost listOfEventStreams
+  el "ul" $ mapM_ renderPostSummaryLine postSummaries
+  return never
+
+renderPostSummaryLine :: MonadWidget t m => PostSummary -> m (Event t Text)
+renderPostSummaryLine postSummary = el "li" $ do
   let postViewFragment = "#" <> sumId postSummary
-  elAttr "a" ("href" =: postViewFragment) $ text $ sumTitle postSummary
-  return ()
-
+  (el, _) <- elAttr' "a" ("href" =: postViewFragment) $ text $ sumTitle postSummary
+  -- return $ (postViewFragment <$ domEvent Click el)
+  return never
 
 -- viewA :: MonadWidget t m => m (Event t Text)
 -- viewA = do
