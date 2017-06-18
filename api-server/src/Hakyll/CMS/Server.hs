@@ -82,6 +82,8 @@ postFromCreation post = do
 createPost :: NewPost -> Handler (Headers '[Header "Location" Text] Types.Post)
 createPost newPost = do
     (id, post) <- postFromCreation newPost
+    when (member id posts) $
+        throwError err409
     return $ addHeader ("/" <> id) post
 
 listPosts :: Handler [PostSummary]
