@@ -31,7 +31,7 @@ library
                      , path >= 0.5.12 && < 0.6
                      , path-io >= 1.2.2 && < 2
                      , exceptions >= 0.8.3 && < 0.9
-                     , aeson >= 0.11.3.0 && < 0.22
+                     , aeson >= 0.11.2.1 && < 0.22
                      , bytestring >= 0.10.8.1 && < 0.11
                      , frontmatter >= 0.1.0.2 && < 0.2
                      , attoparsec >= 0.13.1.0 && < 0.14
