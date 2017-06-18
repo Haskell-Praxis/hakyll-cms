@@ -23,6 +23,7 @@ import           Reflex.Dom.Old                   (MonadWidget)
 import           Reflex.Dom.Main                  (mainWidgetWithCss)
 import           Reflex.Dom.SimpleMDE
 import           Reflex.Dom.Widget.Basic
+import           Reflex.Dom.Widget.Input
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Builder.Immediate
 import           Language.Javascript.JSaddle.Types
@@ -38,6 +39,11 @@ import           Hakyll.CMS.ServerCalls
 import           Data.Maybe
 import           Data.FileEmbed
 
+import           Reflex.Dom.SemanticUI
+import           Reflex.Dom.SemanticUI.Input
+import           Data.Default
+import           Control.Lens.Operators             ((.~), (&))
+
 -- for routing
 import           Reflex.Dom.Contrib.Router
 import           URI.ByteString                   hiding (uriFragment)
@@ -45,11 +51,6 @@ import           URI.ByteString                   as UBS
 import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
 import           Data.Monoid                      ((<>))
 
-
--- for styling
-import           Reflex.Dom.SemanticUI
-import           Reflex.Dom.SemanticUI.Input
-import           Data.Default
 
 
 
@@ -198,7 +199,7 @@ postEditView postId post = do
 
     divClass "field" $ do
       el "label" $ text "Title"
-      uiTextInput (constDyn def) def
+      uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ (title post))
 
     divClass "field" $ do
       el "label" $ text "Author"
