@@ -23,9 +23,10 @@ type ListPosts =
     Get '[JSON] [PostSummary]
 
 type CreatePost =
-    ReqBody '[JSON] NewPost :> Post '[JSON] ()
+    ReqBody '[JSON] NewPost
+        :> PostAccepted '[JSON] (Headers '[Header "Location" Text] Types.Post)
 
 type PostAPI =
          Get '[JSON] Types.Post
-    :<|> ReqBody '[JSON] Types.Post :> Put '[JSON] ()
-    :<|> DeleteAccepted '[JSON] ()
+    :<|> ReqBody '[JSON] Types.Post :> Put '[JSON] Types.Post
+    :<|> DeleteNoContent '[JSON] NoContent

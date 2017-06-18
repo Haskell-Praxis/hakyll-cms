@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -9,7 +10,10 @@ module Hakyll.CMS.Server
 import           Cases
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Data.Eq
+import           Data.Function
 import           Data.Map
+import           Data.Maybe
 import           Data.Monoid
 import           Data.Sequences         hiding (pack)
 import           Data.Text
@@ -19,7 +23,7 @@ import           Data.Tuple
 import           Hakyll.CMS.API
 import           Hakyll.CMS.Types
 import qualified Hakyll.CMS.Types       as Types
-import           Prelude                (maybe, undefined, ($))
+import           Prelude                (undefined)
 import           Servant
 
 api :: Proxy API
@@ -55,8 +59,25 @@ getId title date =
 apiHandler :: Server API
 apiHandler = listPosts :<|> createPost :<|> postServer
 
-createPost :: NewPost -> Handler ()
-createPost newPost = throwError err500
+postFromCreation :: MonadIO m => NewPost -> m (Id, Types.Post)
+postFromCreation post = do
+    time <- liftIO getCurrentTime
+    let id = getId (newTitle post) time
+    return
+        ( id
+        , Types.Post
+            { Types.title = newTitle post
+            , author = newAuthor post
+            , tags = newTags post
+            , content = newContent post
+            , date = time
+            }
+        )
+
+createPost :: NewPost -> Handler (Headers '[Header "Location" Text] Types.Post)
+createPost newPost = do
+    (id, post) <- postFromCreation newPost
+    return $ addHeader ("/" <> id) post
 
 listPosts :: Handler [PostSummary]
 listPosts = do
@@ -71,8 +92,16 @@ getPost id = do
     p <- posts
     maybe (throwError err404) return (lookup id p)
 
-updatePost :: Id -> Types.Post -> Handler ()
-updatePost _ _ = throwError err500
+updatePost :: Id -> Types.Post -> Handler Types.Post
+updatePost id post = do
+    p <- posts
+    oldPost <- maybe (throwError err404) return (lookup id p)
+    when (date oldPost /= date post) $
+        throwError err403
+    return post
 
-deletePost :: Id -> Handler ()
-deletePost _ = throwError err500
+deletePost :: Id -> Handler NoContent
+deletePost id = do
+    p <- posts
+    post <- maybe (throwError err404) return (lookup id p)
+    return NoContent
