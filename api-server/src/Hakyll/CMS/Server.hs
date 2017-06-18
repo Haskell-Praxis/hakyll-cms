@@ -83,7 +83,9 @@ createPost :: NewPost -> Handler (Headers '[Header "Location" Text] Types.Post)
 createPost newPost = do
     (id, post) <- postFromCreation newPost
     when (member id posts) $
-        throwError err409
+        throwError
+            err409
+                { errReasonPhrase = "Post already exists" }
     return $ addHeader ("/" <> id) post
 
 listPosts :: Handler [PostSummary]
@@ -101,7 +103,9 @@ updatePost :: Id -> Types.Post -> Handler Types.Post
 updatePost id post = do
     oldPost <- maybe (throwError err404) return (lookup id posts)
     when (date oldPost /= date post) $
-        throwError err403
+        throwError
+            err403
+                { errReasonPhrase = "creation date is immutable" }
     return post
 
 deletePost :: Id -> Handler NoContent
