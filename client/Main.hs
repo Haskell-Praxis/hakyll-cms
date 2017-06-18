@@ -33,7 +33,7 @@ import           Data.Map.Lazy                      as Map
 import           Control.Monad.IO.Class             (liftIO)
 
 import           Hakyll.CMS.Types                  as Types
-import           ServerCalls
+import           Hakyll.CMS.ServerCalls
 import           Data.Maybe
 
 -- for routing
