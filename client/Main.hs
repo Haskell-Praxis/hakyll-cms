@@ -135,17 +135,29 @@ startOverview = do
     (\summaries -> return summaries)
     errOrSummaries
 
-  el "ul" $
+  elClass "ul" "ui items" $
     mapM_ postSummaryLine summaries
 
   return ()
 
 postSummaryLine :: MonadWidget t m => PostSummary -> m ()
-postSummaryLine postSummary = el "li" $ do
-  let postViewFragment = "#" <> sumId postSummary
-  (el, _) <- elAttr' "a" ("href" =: postViewFragment) $ text $ sumTitle postSummary
-  -- return $ (postViewFragment <$ domEvent Click el)
-  return ()
+postSummaryLine postSummary =
+  elClass "li" "item" $ do
+    let imageUri = "https://foxrudor.de/?q=" <> sumId postSummary -- id appended so every post has a different image (i.e. to avoid caching)
+    divClass "image" $ elAttr "img" ("src" =: imageUri) $ blank
+    divClass "content" $ do
+
+      let postViewFragment = "#" <> sumId postSummary
+      elAttr "a" (
+          ("class" =: "header") <>
+          ("href" =: postViewFragment)
+        ) $
+        text $ sumTitle postSummary
+      -- return $ (postViewFragment <$ domEvent Click el) -- use (el,_) <- elAttr` above
+      divClass "description" $
+        el "p" $
+          text $ sumTeaser postSummary
+      return ()
 
 postEditView :: MonadWidget t m => Text -> m (Event t Text)
 postEditView postId = do
