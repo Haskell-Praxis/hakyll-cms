@@ -62,9 +62,9 @@ getPost id =
   let getPost' :<|> _ :<|> _ = postApi id
   in getPost'
 
-putPost id =
-  let _ :<|> putPost' :<|> _ = postApi id
-  in putPost'
+updatePost id =
+  let _ :<|> updatePost' :<|> _ = postApi id
+  in updatePost'
 
 deletePost id =
   let _ :<|> _ :<|> deletePost' = postApi id
