@@ -180,8 +180,18 @@ postSummaryLine postSummary =
           text $ sumTeaser postSummary
       return ()
 
-postEditView :: MonadWidget t m => Text -> m (Event t Text)
-postEditView postId = do
+loadPostEditView :: MonadWidget t m => Id -> m ()
+loadPostEditView postId = do
+  errOrPost <- liftIO $ getPost postId
+  case errOrPost of
+    -- TODO popup with proper error message
+    Left _ -> text $ "Failed to load post with id " <> postId
+    Right post -> postEditView postId post
+
+postEditView :: MonadWidget t m => Id -> Post -> m ()
+postEditView postId post = do
+  elClass "h1" "ui header" $ text $ "Editing " <> "<Some PostTitle>"
+
   el "div" $ text $ "postId: " <> postId
   mdeChangeEvent <- simpleMDEWidget
   (ct :: Dynamic t Int) <- R.count mdeChangeEvent
@@ -191,7 +201,8 @@ postEditView postId = do
   a <- button "toOverview"
   b <- button "Back"
   performEvent_ $  goBack <$ b
-  return ("/" <$ a)
+  -- return ("/" <$ a)
+  return ()
 
 
 -- redefining the utility function contained in reflex-dom. as
