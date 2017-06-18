@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings         #-}
 -- {-# LANGUAGE RecursiveDo               #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TemplateHaskell           #-}
 -- {-# LANGUAGE TypeFamilies              #-}
 
 -- {-# LANGUAGE ConstraintKinds #-}
@@ -35,6 +36,7 @@ import           Control.Monad.IO.Class             (liftIO)
 import           Hakyll.CMS.Types                  as Types
 import           Hakyll.CMS.ServerCalls
 import           Data.Maybe
+import           Data.FileEmbed
 
 -- for routing
 import           Reflex.Dom.Contrib.Router
@@ -72,15 +74,36 @@ main :: IO ()
 main = run 8081 $ mainWidgetWithCss css app
 
 css :: ByteString
-css = encodeUtf8 semanticCSS <> simpleMdeCss
+css = encodeUtf8 semanticCSS <>
+      simpleMdeCss <>
+      clientCss
+
+clientCss :: ByteString
+clientCss = $(embedFile "style/client.css")
+
+appTitle :: Text
+appTitle = "Hakyll CMS"
 
 app :: forall t m. MonadWidget t m => m ()
 app = do
-    el "div" $ text "[ title bar ]"
-    el "div" routedContent
+    header
+    divClass "ui main text container" routedContent
     -- liftIO getPostDemo
     return ()
 
+
+header :: forall t m. MonadWidget t m => m ()
+header = divClass "ui fixed inverted menu" $
+  divClass "ui container" $
+    elAttr "a" (
+      ("class" =: "header item") <>
+      ("href" =: "#")
+    ) $ do
+      elAttr "img" (
+          ("class" =: "logo") <>
+          ("src" =: "TODO")
+        ) blank
+      text appTitle
 
   --   >>> parseURI strictURIParserOptions "http://www.example.org/foo?bar=baz#quux"
   -- Right (URI {
@@ -135,6 +158,7 @@ startOverview = do
     (\summaries -> return summaries)
     errOrSummaries
 
+  elClass "h1" "ui header" $ text "All Posts"
   elClass "ul" "ui items" $
     mapM_ postSummaryLine summaries
 
