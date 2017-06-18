@@ -130,31 +130,6 @@ renderFragment uri = do
       text fragment
       return ()
 
--- routingMappingOld :: MonadWidget t m => URIRef Absolute -> m (Event t Text)
--- routingMappingOld uri = case UBS.uriFragment uri of
---       Nothing -> overview
---       Just postId -> do
---         -- let postId' = T.tail $ decodeUtf8 path
---         let postId' = decodeUtf8 postId
---         postEditView postId'
-
-
--- overview :: MonadWidget t m => m (Event t Text)
--- overview = do
---   text " [ overview ] "
---   text " [ loading Posts... ] "
---   a <- button "important announcement"
---   b <- button "yet another blog entry"
---   c <- button "lol, look at what i've found"
---
---   return $ leftmost [
---       "#a21342io35" <$ a,
---       "#bas3dlf456" <$ b,
---       "#07dn89s7gf" <$ c
---     ]
-
-
-
 renderOverview :: MonadWidget t m => [PostSummary] -> m (Event t Text)
 renderOverview postSummaries = do
   -- concatenates click-events to [Event]. needs merging.
@@ -170,12 +145,6 @@ renderPostSummaryLine postSummary = el "li" $ do
   (el, _) <- elAttr' "a" ("href" =: postViewFragment) $ text $ sumTitle postSummary
   -- return $ (postViewFragment <$ domEvent Click el)
   return never
-
--- viewA :: MonadWidget t m => m (Event t Text)
--- viewA = do
---   el "div" $ text "view A"
---   gotoB <- button "GoTo B"
---   return $ fmap (const "B") gotoB
 
 postEditView :: MonadWidget t m => Text -> m (Event t Text)
 postEditView postId = do
