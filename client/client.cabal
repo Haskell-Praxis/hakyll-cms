@@ -24,6 +24,7 @@ executable client
                      , transformers >= 0.5.2.0 && < 0.6
                      , containers >= 0.5.7.1 && < 0.6
                      , file-embed >= 0.0.10 && < 0.1
+                     , data-default >= 0.7.1.1 && < 0.8
                      , simple-mde
                      , api-server
   if impl(ghcjs)

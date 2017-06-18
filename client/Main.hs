@@ -49,6 +49,7 @@ import           Data.Monoid                      ((<>))
 -- for styling
 import           Reflex.Dom.SemanticUI
 import           Reflex.Dom.SemanticUI.Input
+import           Data.Default
 
 
 
@@ -193,19 +194,32 @@ postEditView :: MonadWidget t m => Id -> Post -> m ()
 postEditView postId post = do
   elClass "h1" "ui header" $ text $ "Editing \"" <> postId <> "\""
 
+  elClass "form" "ui form" $ do
 
-  uiInput def $ text "foo"
+    divClass "field" $ do
+      el "label" $ text "Title"
+      uiTextInput (constDyn def) def
 
-  el "div" $ text $ "postId: " <> postId
-  mdeChangeEvent <- simpleMDEWidget
-  (ct :: Dynamic t Int) <- R.count mdeChangeEvent
-  display ct
-  text ("\n" :: Text)
-  dynText =<< holdDyn "" mdeChangeEvent
-  -- a <- button "toOverview"
-  -- b <- button "Back"
-  -- performEvent_ $  goBack <$ b
-  -- return ("/" <$ a)
+    divClass "field" $ do
+      el "label" $ text "Author"
+      uiTextInput (constDyn def) def
+
+    divClass "field" $ do
+      el "label" $ text "Tags"
+      uiTextInput (constDyn def) def
+
+    divClass "field" $ do
+      el "label" $ text "Content"
+
+      mdeChangeEvent <- simpleMDEWidget
+      (ct :: Dynamic t Int) <- R.count mdeChangeEvent
+      display ct
+      text ("\n" :: Text)
+      dynText =<< holdDyn "" mdeChangeEvent
+      -- a <- button "toOverview"
+      -- b <- button "Back"
+      -- performEvent_ $  goBack <$ b
+      -- return ("/" <$ a)
   return ()
 
 
