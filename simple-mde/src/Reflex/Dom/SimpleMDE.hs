@@ -208,20 +208,40 @@ simpleMDEWidget :: (
     DomBuilder t m,
     DomBuilderSpace m ~ GhcjsDomSpace,
     TriggerEvent t m
-  ) => m (Event t Text)
-simpleMDEWidget =
+    -- PostBuild t m
+  ) => Text -> m (Event t Text)
+simpleMDEWidget initialValue =
     elClass "div" "simplemde-root" $ do
       liftJSM importSimpleMdeJs
-      txtArea <- fst <$> elClass' "textarea" "simplemde-textarea" blank
+      txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ text initialValue)
+      -- txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ blank)
       let mdeEl = _element_raw txtArea
-      -- simpleMDEObj :: JSVal
-      simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
 
-      liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) ("hello world" :: Text)
+      -- let mdeEl = _element_raw txtArea
+      -- -- simpleMDEObj :: JSVal
+      -- simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
+
+      simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
+      liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) initialValue
       liftJSM $ simpleMDEObj ! ("codemirror"::Text) ^. js2
         ("on"::Text)
         ("change"::Text)
         (eval ("(function() {console.log('on change')})"::Text))
+
+
+      -- postBuildE <- getPostBuild
+      -- ffor postBuildE $ \_ -> do
+      --   -- simpleMDEObj :: JSVal
+      --   simpleMDEObj <- startSimpleMDE mdeEl
+      --   simpleMDEObj ^. js1 ("value" :: Text) initialValue
+      --   simpleMDEObj ! ("codemirror"::Text) ^. js2
+      --     ("on"::Text)
+      --     ("change"::Text)
+      --     (eval ("(function() {console.log('on change')})"::Text))
+
+
+
+
 
       getChangeEvent simpleMDEObj
 

@@ -203,16 +203,17 @@ postEditView postId post = do
 
     divClass "field" $ do
       el "label" $ text "Author"
-      uiTextInput (constDyn def) def
+      uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ (author post))
 
     divClass "field" $ do
       el "label" $ text "Tags"
-      uiTextInput (constDyn def) def
+      let tagsInitVal = T.intercalate ", " $ tags post
+      uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
 
     divClass "field" $ do
       el "label" $ text "Content"
 
-      mdeChangeEvent <- simpleMDEWidget
+      mdeChangeEvent <- simpleMDEWidget $ content post
       (ct :: Dynamic t Int) <- R.count mdeChangeEvent
       display ct
       text ("\n" :: Text)
