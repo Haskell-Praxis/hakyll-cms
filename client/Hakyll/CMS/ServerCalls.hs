@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds                 #-}
+
 module Hakyll.CMS.ServerCalls where
 
 -- for querying the server
@@ -8,6 +10,7 @@ import           Servant.Client
 import           Data.Proxy
 import           Network.HTTP.Client               (Manager, newManager, defaultManagerSettings)
 import           Control.Monad.Trans.Except        (ExceptT, runExceptT)
+import           Data.Text                         (Text)
 
 api :: Proxy API
 api = Proxy
@@ -37,14 +40,14 @@ callServer apiCall = do
 getPostSummaries :: IO (Either ServantError [PostSummary])
 getPostSummaries = callServer getPostSummariesGeneric
 
-createPost :: NewPost -> IO (Either ServantError ())
+createPost :: NewPost -> IO (Either ServantError (Headers '[Header "Location" Text] Types.Post))
 createPost = callServer . createPostGeneric
 
 getPost :: Id -> IO (Either ServantError Types.Post)
 getPost = callServer . getPostGeneric
 
-updatePost :: Id -> Types.Post -> IO (Either ServantError ())
+updatePost :: Id -> Types.Post -> IO (Either ServantError Types.Post)
 updatePost id post = callServer $ updatePostGeneric id post
 
-deletePost :: Id -> IO (Either ServantError ())
+deletePost :: Id -> IO (Either ServantError NoContent)
 deletePost = callServer . deletePostGeneric
