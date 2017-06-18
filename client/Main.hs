@@ -116,24 +116,31 @@ routedContent :: MonadWidget t m => m ()
 routedContent = do
   -- rec r <- partialPathRoute "" . switchPromptlyDyn =<< holdDyn never views
   rec
-    r <- route . switchPromptlyDyn =<< holdDyn never views
-    views <- dyn $ ffor r $ \uri -> case UBS.uriFragment uri of
-      Nothing -> do
-        text " [ overview ] "
-        a <- button "important announcement"
-        b <- button "yet another blog entry"
-        c <- button "lol, look at what i've found"
+    r <- route . switchPromptlyDyn =<< holdDyn never gotoRoute
+    gotoRoute <- dyn $ ffor r routingMapping
+  return ()
 
-        return $ leftmost [
-            "#a21342io35" <$ a,
-            "#bas3dlf456" <$ b,
-            "#07dn89s7gf" <$ c
-          ]
+routingMapping :: MonadWidget t m => URIRef Absolute -> m (Event t Text)
+routingMapping uri = case UBS.uriFragment uri of
+      Nothing -> overview
       Just postId -> do
         -- let postId' = T.tail $ decodeUtf8 path
         let postId' = decodeUtf8 postId
         postEditView postId'
-  return ()
+
+overview :: MonadWidget t m => m (Event t Text)
+overview = do
+  text " [ overview ] "
+  a <- button "important announcement"
+  b <- button "yet another blog entry"
+  c <- button "lol, look at what i've found"
+
+  return $ leftmost [
+      "#a21342io35" <$ a,
+      "#bas3dlf456" <$ b,
+      "#07dn89s7gf" <$ c
+    ]
+
 
 -- viewA :: MonadWidget t m => m (Event t Text)
 -- viewA = do
