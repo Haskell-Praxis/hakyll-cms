@@ -137,26 +137,24 @@ routedContent = do
 
 routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
-      Nothing -> overview
-      Just "" -> overview
+      Nothing -> loadOverview
+      Just "" -> loadOverview
       Just postId -> do
         -- let postId' = T.tail $ decodeUtf8 path
         let postId' = decodeUtf8 postId
-        postEditView postId'
+        loadPostEditView postId'
         return ()
 
-overview :: MonadWidget t m =>  m ()
-overview = do
-  errOrSummaries <- liftIO getPostSummaries
-  summaries <- either
-    (\err -> do
-        liftIO $ print ("Posts failed to load" :: Text)
-        -- TODO error popup
-        return []
-      )
-    (\summaries -> return summaries)
-    errOrSummaries
+loadOverview :: MonadWidget t m => m ()
+loadOverview = do
+  errOrSummaries <- liftIO $ getPostSummaries
+  case errOrSummaries of
+    -- TODO popup with proper error message
+    Left _ -> text $ "Failed to load post summaries"
+    Right summaries -> overview summaries
 
+overview :: MonadWidget t m => [PostSummary] -> m ()
+overview summaries = do
   elClass "h1" "ui header" $ text "All Posts"
   elClass "ul" "ui items" $
     mapM_ postSummaryLine summaries
