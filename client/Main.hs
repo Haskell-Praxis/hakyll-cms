@@ -79,7 +79,7 @@ css = encodeUtf8 semanticCSS <>
       clientCss
 
 clientCss :: ByteString
-clientCss = $(embedFile "style/client.css")
+clientCss = $(embedFile "static/client.css")
 
 appTitle :: Text
 appTitle = "Hakyll CMS"
@@ -99,9 +99,10 @@ header = divClass "ui fixed inverted menu" $
       ("class" =: "header item") <>
       ("href" =: "#")
     ) $ do
+      -- TODO needs bundling (or static serving)
       elAttr "img" (
           ("class" =: "logo") <>
-          ("src" =: "TODO")
+          ("src" =: "static/logo.export.svg")
         ) blank
       text appTitle
 
