@@ -142,6 +142,14 @@ overview = do
     ]
 
 
+
+renderPostSummaryLine :: MonadWidget t m => PostSummary -> m ()
+renderPostSummaryLine postSummary = do
+  let postViewFragment = "#" <> sumId postSummary
+  elAttr "a" ("href" =: postViewFragment) $ text $ sumTitle postSummary
+  return ()
+
+
 -- viewA :: MonadWidget t m => m (Event t Text)
 -- viewA = do
 --   el "div" $ text "view A"
@@ -162,3 +170,8 @@ postEditView postId = do
   return ("/" <$ a)
 
 
+-- redefining the utility function contained in reflex-dom. as
+-- we only use reflex-dom-core, we'll avoid including the former
+-- just for this one function.
+(=:) :: k -> a -> Map k a
+(=:) = Map.singleton
