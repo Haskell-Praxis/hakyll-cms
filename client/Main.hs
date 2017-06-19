@@ -222,6 +222,16 @@ postEditView postId post = do
       -- b <- button "Back"
       -- performEvent_ $  goBack <$ b
       -- return ("/" <$ a)
+
+    submitBtnE <- uiButton def $ text "Save"
+    let submitE = ffor submitBtnE $ (\_ -> liftIO $ createPost dummyNewPost)
+    -- let submitE = ffor submitBtnE $ (\_ -> liftIO $ putStrLn "posting to server")
+    performEvent submitE
+
+    -- liftIO $ createPost dummyNewPost
+
+    return ()
+
   return ()
 
 
@@ -230,3 +240,13 @@ postEditView postId post = do
 -- just for this one function.
 (=:) :: k -> a -> Map k a
 (=:) = Map.singleton
+
+
+
+dummyNewPost :: NewPost
+dummyNewPost = NewPost
+        { newTitle = "New Dummy Post"
+        , newAuthor = "Sam Dent"
+        , newTags = ["tag1", "tag2"]
+        , newContent = "Some new dummy post, vestibulum sed placerat odio. Phasellus pulvinar ex in lorem auctor congue. Maecenas egestas auctor nisl, eget efficitur neque condimentum et. Ut auctor auctor molestie. Vestibulum porta urna sapien, eget iaculis velit bibendum sit amet. Pellentesque venenatis sapien in ligula egestas, eu aliquet orci laoreet."
+        }
