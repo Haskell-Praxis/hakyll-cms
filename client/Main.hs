@@ -153,10 +153,10 @@ routingMapping uri = case UBS.uriFragment uri of
 
 loadOverview :: MonadWidget t m => m ()
 loadOverview = do
-  errOrSummaries <- liftIO $ getPostSummaries
+  errOrSummaries <- liftIO getPostSummaries
   case errOrSummaries of
     -- TODO popup with proper error message
-    Left _ -> text $ "Failed to load post summaries"
+    Left _ -> text "Failed to load post summaries"
     Right summaries -> overview summaries
 
 overview :: MonadWidget t m => [PostSummary] -> m ()
@@ -171,7 +171,7 @@ postSummaryLine :: MonadWidget t m => PostSummary -> m ()
 postSummaryLine postSummary =
   elClass "li" "item" $ do
     let imageUri = "https://foxrudor.de/?q=" <> sumId postSummary -- id appended so every post has a different image (i.e. to avoid caching)
-    divClass "image" $ elAttr "img" ("src" =: imageUri) $ blank
+    divClass "image" $ elAttr "img" ("src" =: imageUri) blank
     divClass "content" $ do
 
       let postViewFragment = "#/edit/" <> sumId postSummary
@@ -188,9 +188,9 @@ postSummaryLine postSummary =
 
 createPostView :: MonadWidget t m => m ()
 createPostView = do
-  elClass "h1" "ui header" $ text $ "Creating New Post"
+  elClass "h1" "ui header" $ text "Creating New Post"
   newPostSubmitE <- postForm "Create Post" emptyNewPost
-  performEvent $ ffor newPostSubmitE $ (\newPost -> liftIO $ createPost newPost)
+  performEvent $ fmap (liftIO . createPost) newPostSubmitE
   return ()
 
 loadPostEditView :: MonadWidget t m => Id -> m ()
@@ -207,23 +207,23 @@ postEditView postId post = do
   elClass "h1" "ui header" $ text $ "Editing \"" <> postId <> "\""
   newPostSubmiE <- postForm "Save" $ fromPost post
   let postSubmitE = fmap (toPost  $ date post) newPostSubmiE
-  performEvent $ ffor postSubmitE $ (\post' -> liftIO $ updatePost postId post')
+  performEvent $ fmap (liftIO . updatePost postId) postSubmitE 
   return ()
 
 
 postForm :: MonadWidget t m => Text -> NewPost -> m (Event t NewPost)
 postForm submitBtnLabel initialValues = elClass "form" "ui form" $ do
 
-  titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ (newTitle initialValues))
+  titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ newTitle initialValues)
   let titleD = value titleTxtInput
 
-  authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (newAuthor initialValues))
+  authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ newAuthor initialValues)
   let authorD = value authorTxtInput
 
   let tagsInitVal = T.intercalate ", " $ newTags initialValues
   tagsTxtInput <- uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
-  let splitTags = \ts -> map T.strip $ T.split (==',') ts
-  let tagsD = fmap splitTags $ value tagsTxtInput
+  let splitTags ts = map T.strip $ T.split (==',') ts
+  let tagsD = splitTags <$> value tagsTxtInput
 
   contentD <- divClass "field" $ do
     el "label" $ text "Content"
