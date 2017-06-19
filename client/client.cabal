@@ -26,6 +26,7 @@ executable client
                      , file-embed >= 0.0.10 && < 0.1
                      , data-default >= 0.7.1.1 && < 0.8
                      , lens >= 4.14 && < 5
+                     , time >= 1.6.0.1 && < 1.7
                      , simple-mde
                      , api
   if impl(ghcjs)

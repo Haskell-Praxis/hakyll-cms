@@ -44,6 +44,7 @@ import           Reflex.Dom.SemanticUI
 import           Reflex.Dom.SemanticUI.Input
 import           Data.Default
 import           Control.Lens.Operators             ((.~), (&))
+import           Data.Time
 
 -- for routing
 import           Reflex.Dom.Contrib.Router
@@ -196,40 +197,50 @@ loadPostEditView postId = do
     Left _ -> text $ "Failed to load post with id " <> postId
     Right post -> postEditView postId post
 
+createPostView :: MonadWidget t m => m ()
+createPostView = do
+  elClass "h1" "ui header" $ text $ "Creating New Post"
+  return ()
+
 postEditView :: MonadWidget t m => Id -> Post -> m ()
 postEditView postId post = do
   elClass "h1" "ui header" $ text $ "Editing \"" <> postId <> "\""
-
-  elClass "form" "ui form" $ do
-
-    titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ (title post))
-    let titleD = value titleTxtInput
-
-    authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (author post))
-    let authorD = value authorTxtInput
-
-    let tagsInitVal = T.intercalate ", " $ tags post
-    tagsTxtInput <- uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
-    let splitTags = \ts -> map T.strip $ T.split (==',') ts
-    let tagsD = fmap splitTags $ value tagsTxtInput
-
-    contentD <- divClass "field" $ do
-      el "label" $ text "Content"
-      simpleMDEWidget $ content post
-
-    let dateD = constDyn $ date post
-    let postD = Post <$> titleD <*> authorD <*> tagsD <*> contentD <*> dateD
-
-    dynText $ fmap (T.pack . show) postD
-
-    submitBtnE <- uiButton def $ text "Save"
-    let submitBtnPostE = tagPromptlyDyn postD submitBtnE
-    let submitE = ffor submitBtnPostE $ (\post' -> liftIO $ updatePost postId post')
-    performEvent submitE
-
-    return ()
-
+  newPostSubmiE <- postForm "Save" $ fromPost post
+  let postSubmitE = fmap (toPost  $ date post) newPostSubmiE
+  performEvent $ ffor postSubmitE $ (\post' -> liftIO $ updatePost postId post')
   return ()
+
+
+postForm :: MonadWidget t m => Text -> NewPost -> m (Event t NewPost)
+postForm submitBtnLabel initialValues = elClass "form" "ui form" $ do
+
+  titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ (newTitle initialValues))
+  let titleD = value titleTxtInput
+
+  authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (newAuthor initialValues))
+  let authorD = value authorTxtInput
+
+  let tagsInitVal = T.intercalate ", " $ newTags initialValues
+  tagsTxtInput <- uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
+  let splitTags = \ts -> map T.strip $ T.split (==',') ts
+  let tagsD = fmap splitTags $ value tagsTxtInput
+
+  contentD <- divClass "field" $ do
+    el "label" $ text "Content"
+    simpleMDEWidget $ newContent initialValues
+
+  -- let dateD = constDyn $ newDate initialValues
+  let postD = NewPost <$> titleD <*> authorD <*> tagsD <*> contentD
+
+  dynText $ fmap (T.pack . show) postD
+
+  submitBtnE <- uiButton def $ text submitBtnLabel
+  let submitBtnPostE = tagPromptlyDyn postD submitBtnE
+  -- let submitE = ffor submitBtnPostE $ (\initialValues' -> liftIO $ updatePost postId initialValues')
+  -- performEvent submitE
+
+  return submitBtnPostE
+
 
 uiLabelledTextInput :: MonadWidget t m
   => Text
@@ -247,6 +258,32 @@ uiLabelledTextInput label iDyn c = divClass "field" $ do
 (=:) = Map.singleton
 
 
+emptyNewPost :: NewPost
+emptyNewPost = NewPost
+    { newTitle   = ""
+    , newAuthor  = ""
+    , newTags    = []
+    , newContent = ""
+    }
+
+fromPost :: Post -> NewPost
+fromPost post =
+  NewPost
+    { newTitle = title post
+    , newAuthor = author post
+    , newTags = tags post
+    , newContent = content post
+    }
+
+toPost :: UTCTime -> NewPost -> Post
+toPost t post =
+  Post
+    { title   = newTitle post
+    , author  = newAuthor post
+    , tags    = newTags post
+    , content = newContent post
+    , date    = t
+    }
 
 dummyNewPost :: NewPost
 dummyNewPost = NewPost
