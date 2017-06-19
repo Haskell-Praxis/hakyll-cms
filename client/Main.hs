@@ -143,10 +143,14 @@ routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
       Nothing -> loadOverview
       Just "" -> loadOverview
-      Just postId -> do
-        -- let postId' = T.tail $ decodeUtf8 path
-        let postId' = decodeUtf8 postId
-        loadPostEditView postId'
+      Just "/new" -> text "[ TODO create new post gui]"
+      Just variableRoute -> do
+        let variableRoute' = decodeUtf8 variableRoute
+        let maybePostId = T.stripPrefix "/edit/" variableRoute'
+        case maybePostId of
+          Just postId -> loadPostEditView postId
+          Nothing -> text ("404 - invalid route: " <> variableRoute')
+
         return ()
 
 loadOverview :: MonadWidget t m => m ()
@@ -172,7 +176,7 @@ postSummaryLine postSummary =
     divClass "image" $ elAttr "img" ("src" =: imageUri) $ blank
     divClass "content" $ do
 
-      let postViewFragment = "#" <> sumId postSummary
+      let postViewFragment = "#/edit/" <> sumId postSummary
       elAttr "a" (
           ("class" =: "header") <>
           ("href" =: postViewFragment)
