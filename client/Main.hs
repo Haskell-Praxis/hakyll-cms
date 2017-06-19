@@ -19,7 +19,7 @@ module Main where
 
 import           Language.Javascript.JSaddle.Warp (run)
 import           Reflex                           as R
-import           Reflex.Dom.Old                   (MonadWidget)
+import           Reflex.Dom.Old                   (MonadWidget, elDynHtmlAttr')
 import           Reflex.Dom.Main                  (mainWidgetWithCss)
 import           Reflex.Dom.SimpleMDE
 import           Reflex.Dom.Widget.Basic
@@ -92,6 +92,9 @@ clientCss = $(embedFile "static/client.css")
 appTitle :: Text
 appTitle = "Hakyll CMS"
 
+logoCode :: Text
+logoCode = $(embedStringFile "static/logo.export.svg")
+
 app :: forall t m. MonadWidget t m => m ()
 app = do
     header
@@ -104,13 +107,7 @@ header :: forall t m. MonadWidget t m => m ()
 header = divClass "ui fixed inverted menu" $
   divClass "ui container" $ do
     elAttr "a" ( ("class" =: "header item") <> ("href" =: "#") ) $ do
-
-        -- TODO needs bundling (or static serving)
-        elAttr "img"
-          (  ("class" =: "logo")
-          <> ("src" =: "static/logo.export.svg")
-          ) blank
-
+        elDynHtmlAttr' "div" ("class" =: "logo") (constDyn logoCode)
         text appTitle
 
     elAttr "a"
