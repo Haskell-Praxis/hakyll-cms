@@ -1,3 +1,7 @@
 resolver: lts-7.19
 
+packages:
+- location: '.'
+- location: '../api'
+
 extra-deps:

@@ -7,7 +7,6 @@ module Hakyll.CMS.API
     )
     where
 
-import           Data.Map
 import           Data.Text
 import           Data.Time
 import           Hakyll.CMS.Types hiding (Post)
