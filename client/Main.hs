@@ -216,12 +216,17 @@ postEditView postId post = do
       el "label" $ text "Content"
       simpleMDEWidget $ content post
 
+    let dateD = constDyn $ date post
+    let postD = Post <$> titleD <*> authorD <*> tagsD <*> contentD <*> dateD
+    -- let postD = NewPost $ titleD <*> authorD <*> tagsD <*> contentD <*> (constDyn $ date post)
 
-    let fooDyn = (<>) <$> (value titleTxtInput) <*> (value authorTxtInput)
-    dynText fooDyn
+    dynText $ fmap (T.pack . show) postD
+
+    -- let fooDyn = (<>) <$> (value titleTxtInput) <*> (value authorTxtInput)
+    -- dynText fooDyn
 
     -- let fooDyn = (<>) <$> (value titleTxtInput) <*> contentD
-    dynText contentD
+    -- dynText content
 
     -- (ct :: Dynamic t Int) <- R.count mdeChangeEvent
     -- display ct
