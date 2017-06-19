@@ -101,11 +101,19 @@ header :: forall t m. MonadWidget t m => m ()
 header = divClass "ui fixed inverted menu" $
   divClass "ui container" $ do
     elAttr "a" ( ("class" =: "header item") <> ("href" =: "#") ) $ do
+
         -- TODO needs bundling (or static serving)
-        elAttr "img" ( ("class" =: "logo") <> ("src" =: "static/logo.export.svg") ) blank
+        elAttr "img"
+          (  ("class" =: "logo")
+          <> ("src" =: "static/logo.export.svg")
+          ) blank
+
         text appTitle
 
-    elAttr "a" ( ("class" =: "item") <> ("href" =: "#/new") ) $ text "New Post"
+    elAttr "a"
+      (  ("class" =: "item")
+      <> ("href" =: "#/new")
+      ) $ text "New Post"
 
 
   --   >>> parseURI strictURIParserOptions "http://www.example.org/foo?bar=baz#quux"
@@ -207,21 +215,27 @@ postEditView postId post = do
   elClass "h1" "ui header" $ text $ "Editing \"" <> postId <> "\""
   newPostSubmiE <- postForm "Save" $ fromPost post
   let postSubmitE = fmap (toPost  $ date post) newPostSubmiE
-  performEvent $ fmap (liftIO . updatePost postId) postSubmitE 
+  performEvent $ fmap (liftIO . updatePost postId) postSubmitE
   return ()
 
 
 postForm :: MonadWidget t m => Text -> NewPost -> m (Event t NewPost)
 postForm submitBtnLabel initialValues = elClass "form" "ui form" $ do
 
-  titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ newTitle initialValues)
+  titleTxtInput <- uiLabelledTextInput
+    "Title" (constDyn def)
+    (def & textInputConfig_initialValue .~ newTitle initialValues)
   let titleD = value titleTxtInput
 
-  authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ newAuthor initialValues)
+  authorTxtInput <- uiLabelledTextInput
+    "Author(s)" (constDyn def)
+    (def & textInputConfig_initialValue .~ newAuthor initialValues)
   let authorD = value authorTxtInput
 
   let tagsInitVal = T.intercalate ", " $ newTags initialValues
-  tagsTxtInput <- uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
+  tagsTxtInput <- uiLabelledTextInput
+    "Tags" (constDyn def)
+    (def & textInputConfig_initialValue .~ tagsInitVal)
   let splitTags ts = map T.strip $ T.split (==',') ts
   let tagsD = splitTags <$> value tagsTxtInput
 
