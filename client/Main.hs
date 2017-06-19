@@ -29,9 +29,10 @@ import           Reflex.Dom.Builder.Immediate
 import           Language.Javascript.JSaddle.Types
 import           Control.Monad.Fix
 import           Data.Text                          (Text)
+import qualified Data.Text                          as T
 import           Data.ByteString                    (ByteString)
-import           Data.Text                          as T
-import           Data.Map.Lazy                      as Map
+import           Data.Map.Lazy                      (Map)
+import qualified Data.Map.Lazy                      as Map
 import           Control.Monad.IO.Class             (liftIO)
 
 import           Hakyll.CMS.Types                  as Types
@@ -198,12 +199,15 @@ postEditView postId post = do
   elClass "form" "ui form" $ do
 
     titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ (title post))
-    -- dynText $ value titleTxtInput
+    let titleD = value titleTxtInput
 
     authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (author post))
+    let authorD = value authorTxtInput
 
     let tagsInitVal = T.intercalate ", " $ tags post
-    uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
+    tagsTxtInput <- uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
+    let splitTags = \ts -> map T.strip $ T.split (==',') ts
+    let tagsD = fmap splitTags $ value tagsTxtInput
 
     -- let (fooDyn :: Dynamic t Text) = (value titleTxtInput)
     -- let (barDyn :: Dynamic t Text) = (value authorTxtInput)
