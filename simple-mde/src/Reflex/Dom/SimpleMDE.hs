@@ -6,6 +6,8 @@
 
 {-# LANGUAGE ScopedTypeVariables   #-}
 
+{-# LANGUAGE FlexibleContexts      #-}
+
 module Reflex.Dom.SimpleMDE where
 
 import           Control.Lens                       (makeLenses)
@@ -27,6 +29,7 @@ import           Reflex.Dom.Builder.Immediate
 import           Reflex.Dom.Widget.Basic
 import           GHCJS.Marshal.Pure                 (pToJSVal, PToJSVal)
 import           Reflex.Dom.Widget.Input
+import           Reflex.Dom.Time                    (delay)
 import           Reflex.PostBuild.Class
 import           Reflex.TriggerEvent.Class
 import           Reflex
@@ -197,10 +200,11 @@ importSimpleMdeJs = do
 simpleMdeCss :: ByteString
 simpleMdeCss = $(embedFile "jslib/simplemde-markdown-editor/dist/simplemde.min.css")
 
-startSimpleMDE :: PToJSVal a => a -> JSM JSVal
-startSimpleMDE el = do
+startSimpleMDE :: PToJSVal a => Text -> a -> JSM JSVal
+startSimpleMDE initialVal el = do
   conf <- obj
   (conf <# ("element" :: Text)) (pToJSVal el)
+  (conf <# ("initialValue" :: Text)) initialVal
   new (jsg ("SimpleMDE" :: Text)) (toJSVal conf)
 
 simpleMDEWidget :: (
@@ -208,8 +212,11 @@ simpleMDEWidget :: (
     DomBuilder t m,
     DomBuilderSpace m ~ GhcjsDomSpace,
     TriggerEvent t m,
-    MonadHold t m
-    -- PostBuild t m
+    MonadHold t m,
+
+    PostBuild t m,
+    PerformEvent t m,
+    MonadJSM (Performable m)
   ) => Text -> m (Dynamic t Text)
 simpleMDEWidget initialValue =
     elClass "div" "simplemde-root" $ do
@@ -218,19 +225,34 @@ simpleMDEWidget initialValue =
       -- txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ blank)
       let mdeEl = _element_raw txtArea
 
-      -- let mdeEl = _element_raw txtArea
-      -- -- simpleMDEObj :: JSVal
-      -- simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
+      simpleMDEObj <- liftJSM $ startSimpleMDE initialValue mdeEl
 
-      simpleMDEObj <- liftJSM $ startSimpleMDE mdeEl
-      liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) initialValue
-      liftJSM $ simpleMDEObj ! ("codemirror"::Text) ^. js2
-        ("on"::Text)
-        ("change"::Text)
-        (eval ("(function() {console.log('on change')})"::Text))
+      -- let setInitVal = simpleMDEObj ^. js1 ("value" :: Text) initialValue
+      -- liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) initialValue
+
+      -- workaround for https://github.com/nestor-qa/nestor/issues/98
+      postBuildE <- getPostBuild
+      delayedPostBuildE <- delay 1 postBuildE
+      let refreshE = (refresh simpleMDEObj) <$ delayedPostBuildE
+      performEvent refreshE
+
+      -- liftJSM $ simpleMDEObj ! ("codemirror"::Text) ^. js2
+      --   ("on"::Text)
+      --   ("change"::Text)
+      --   (eval ("(function() {console.log('on change')})"::Text))
 
       mdeChangeE <- getChangeEvent simpleMDEObj
       holdDyn initialValue mdeChangeE
+
+refresh :: MonadJSM m => JSVal -> m ()
+refresh simpleMDEObj = do
+  liftJSM $ simpleMDEObj ! ("codemirror" :: Text) ^. js0 ("refresh" :: Text)
+  return ()
+
+setVal :: MonadJSM m => JSVal -> Text -> m ()
+setVal simpleMDEObj initialValue = do
+  liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) initialValue
+  return ()
 
       -- postBuildE <- getPostBuild
       -- ffor postBuildE $ \_ -> do
