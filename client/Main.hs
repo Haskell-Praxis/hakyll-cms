@@ -99,17 +99,14 @@ app = do
 
 header :: forall t m. MonadWidget t m => m ()
 header = divClass "ui fixed inverted menu" $
-  divClass "ui container" $
-    elAttr "a" (
-      ("class" =: "header item") <>
-      ("href" =: "#")
-    ) $ do
-      -- TODO needs bundling (or static serving)
-      elAttr "img" (
-          ("class" =: "logo") <>
-          ("src" =: "static/logo.export.svg")
-        ) blank
-      text appTitle
+  divClass "ui container" $ do
+    elAttr "a" ( ("class" =: "header item") <> ("href" =: "#") ) $ do
+        -- TODO needs bundling (or static serving)
+        elAttr "img" ( ("class" =: "logo") <> ("src" =: "static/logo.export.svg") ) blank
+        text appTitle
+
+    elAttr "a" ( ("class" =: "item") <> ("href" =: "#/new") ) $ text "New Post"
+
 
   --   >>> parseURI strictURIParserOptions "http://www.example.org/foo?bar=baz#quux"
   -- Right (URI {
@@ -144,7 +141,7 @@ routingMapping :: MonadWidget t m => URIRef Absolute -> m ()
 routingMapping uri = case UBS.uriFragment uri of
       Nothing -> loadOverview
       Just "" -> loadOverview
-      Just "/new" -> text "[ TODO create new post gui]"
+      Just "/new" -> createPostView
       Just variableRoute -> do
         let variableRoute' = decodeUtf8 variableRoute
         let maybePostId = T.stripPrefix "/edit/" variableRoute'
@@ -189,6 +186,13 @@ postSummaryLine postSummary =
           text $ sumTeaser postSummary
       return ()
 
+createPostView :: MonadWidget t m => m ()
+createPostView = do
+  elClass "h1" "ui header" $ text $ "Creating New Post"
+  newPostSubmitE <- postForm "Create Post" emptyNewPost
+  performEvent $ ffor newPostSubmitE $ (\newPost -> liftIO $ createPost newPost)
+  return ()
+
 loadPostEditView :: MonadWidget t m => Id -> m ()
 loadPostEditView postId = do
   errOrPost <- liftIO $ getPost postId
@@ -197,10 +201,6 @@ loadPostEditView postId = do
     Left _ -> text $ "Failed to load post with id " <> postId
     Right post -> postEditView postId post
 
-createPostView :: MonadWidget t m => m ()
-createPostView = do
-  elClass "h1" "ui header" $ text $ "Creating New Post"
-  return ()
 
 postEditView :: MonadWidget t m => Id -> Post -> m ()
 postEditView postId post = do
