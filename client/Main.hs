@@ -248,13 +248,13 @@ postForm submitBtnLabel initialValues = elClass "form" "ui form" $ do
 
   dynText $ fmap (T.pack . show) postD
 
-  submitBtnE <- uiButton def $ text submitBtnLabel
-  let submitBtnPostE = tagPromptlyDyn postD submitBtnE
-  -- let submitE = ffor submitBtnPostE $ (\initialValues' -> liftIO $ updatePost postId initialValues')
-  -- performEvent submitE
+  (submitButton, _) <- elAttr' "button"
+    (  ("class" =: "ui button")
+    <> ("type" =: "button")
+    ) $ text submitBtnLabel
 
-  return submitBtnPostE
-
+  let submitBtnE = domEvent Click submitButton
+  return $ tagPromptlyDyn postD submitBtnE
 
 uiLabelledTextInput :: MonadWidget t m
   => Text
