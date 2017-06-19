@@ -221,8 +221,8 @@ simpleMDEWidget :: (
 simpleMDEWidget initialValue =
     elClass "div" "simplemde-root" $ do
       liftJSM importSimpleMdeJs
-      txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ text initialValue)
-      -- txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ blank)
+      -- txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ text initialValue)
+      txtArea <- fst <$> (elClass' "textarea" "simplemde-textarea" $ blank)
       let mdeEl = _element_raw txtArea
 
       simpleMDEObj <- liftJSM $ startSimpleMDE initialValue mdeEl
