@@ -197,19 +197,13 @@ postEditView postId post = do
 
   elClass "form" "ui form" $ do
 
-    divClass "field" $ do
-      el "label" $ text "Title"
-      titleTxtInput <- uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ (title post))
-      dynText $ value titleTxtInput
+    titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ (title post))
+    -- dynText $ value titleTxtInput
 
-    divClass "field" $ do
-      el "label" $ text "Author"
-      uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ (author post))
+    uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (author post))
 
-    divClass "field" $ do
-      el "label" $ text "Tags"
-      let tagsInitVal = T.intercalate ", " $ tags post
-      uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
+    let tagsInitVal = T.intercalate ", " $ tags post
+    uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
 
     divClass "field" $ do
       el "label" $ text "Content"
@@ -235,6 +229,14 @@ postEditView postId post = do
 
   return ()
 
+uiLabelledTextInput :: MonadWidget t m
+  => Text
+  -> Dynamic t UiInput
+  -> TextInputConfig t
+  -> m (TextInput t)
+uiLabelledTextInput label iDyn c = divClass "field" $ do
+    el "label" $ text label
+    uiTextInput iDyn c
 
 -- redefining the utility function contained in reflex-dom. as
 -- we only use reflex-dom-core, we'll avoid including the former
