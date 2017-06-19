@@ -199,7 +199,8 @@ postEditView postId post = do
 
     divClass "field" $ do
       el "label" $ text "Title"
-      uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ (title post))
+      titleTxtInput <- uiTextInput (constDyn def) (def & textInputConfig_initialValue .~ (title post))
+      dynText $ value titleTxtInput
 
     divClass "field" $ do
       el "label" $ text "Author"
