@@ -209,40 +209,19 @@ postEditView postId post = do
     let splitTags = \ts -> map T.strip $ T.split (==',') ts
     let tagsD = fmap splitTags $ value tagsTxtInput
 
-    -- let (fooDyn :: Dynamic t Text) = (value titleTxtInput)
-    -- let (barDyn :: Dynamic t Text) = (value authorTxtInput)
-
     contentD <- divClass "field" $ do
       el "label" $ text "Content"
       simpleMDEWidget $ content post
 
     let dateD = constDyn $ date post
     let postD = Post <$> titleD <*> authorD <*> tagsD <*> contentD <*> dateD
-    -- let postD = NewPost $ titleD <*> authorD <*> tagsD <*> contentD <*> (constDyn $ date post)
 
     dynText $ fmap (T.pack . show) postD
 
-    -- let fooDyn = (<>) <$> (value titleTxtInput) <*> (value authorTxtInput)
-    -- dynText fooDyn
-
-    -- let fooDyn = (<>) <$> (value titleTxtInput) <*> contentD
-    -- dynText content
-
-    -- (ct :: Dynamic t Int) <- R.count mdeChangeEvent
-    -- display ct
-    -- text ("\n" :: Text)
-    -- dynText =<< holdDyn "" mdeChangeEvent
-    -- a <- button "toOverview"
-    -- b <- button "Back"
-    -- performEvent_ $  goBack <$ b
-    -- return ("/" <$ a)
-
     submitBtnE <- uiButton def $ text "Save"
-    let submitE = ffor submitBtnE $ (\_ -> liftIO $ createPost dummyNewPost)
-    -- let submitE = ffor submitBtnE $ (\_ -> liftIO $ putStrLn "posting to server")
+    let submitBtnPostE = tagPromptlyDyn postD submitBtnE
+    let submitE = ffor submitBtnPostE $ (\post' -> liftIO $ updatePost postId post')
     performEvent submitE
-
-    -- liftIO $ createPost dummyNewPost
 
     return ()
 
