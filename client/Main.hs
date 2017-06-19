@@ -27,6 +27,7 @@ import           Reflex.Dom.Widget.Input
 import           Reflex.Dom.Builder.Class
 import           Reflex.Dom.Builder.Immediate
 import           Language.Javascript.JSaddle.Types
+import           JSDOM.Generated.Location
 import           Control.Monad.Fix
 import           Data.Text                          (Text)
 import qualified Data.Text                          as T
@@ -52,6 +53,8 @@ import           URI.ByteString                   hiding (uriFragment)
 import           URI.ByteString                   as UBS
 import           Data.Text.Encoding               (decodeUtf8, encodeUtf8)
 import           Data.Monoid                      ((<>))
+-- import           GHCJS.DOM.Window                 (getLocation)
+import           Foreign.JavaScript.TH
 
 
 
@@ -199,6 +202,7 @@ createPostView = do
   elClass "h1" "ui header" $ text "Creating New Post"
   newPostSubmitE <- postForm "Create Post" emptyNewPost
   performEvent $ fmap (liftIO . createPost) newPostSubmitE
+  performEvent $ fmap (\_ -> gotoRoute ("#" :: Text)) newPostSubmitE
   return ()
 
 loadPostEditView :: MonadWidget t m => Id -> m ()
@@ -306,3 +310,9 @@ dummyNewPost = NewPost
         , newTags = ["tag1", "tag2"]
         , newContent = "Some new dummy post, vestibulum sed placerat odio. Phasellus pulvinar ex in lorem auctor congue. Maecenas egestas auctor nisl, eget efficitur neque condimentum et. Ut auctor auctor molestie. Vestibulum porta urna sapien, eget iaculis velit bibendum sit amet. Pellentesque venenatis sapien in ligula egestas, eu aliquet orci laoreet."
         }
+gotoRoute :: (HasJSContext m, MonadJSM m) => Text -> m ()
+gotoRoute rt = do
+  -- Just win <- currentWindow
+  -- Just loc <- getLocation win
+  loc <- getLoc
+  assign loc rt
