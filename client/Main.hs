@@ -200,23 +200,33 @@ postEditView postId post = do
     titleTxtInput <- uiLabelledTextInput "Title" (constDyn def) (def & textInputConfig_initialValue .~ (title post))
     -- dynText $ value titleTxtInput
 
-    uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (author post))
+    authorTxtInput <- uiLabelledTextInput "Author(s)" (constDyn def) (def & textInputConfig_initialValue .~ (author post))
 
     let tagsInitVal = T.intercalate ", " $ tags post
     uiLabelledTextInput "Tags" (constDyn def) (def & textInputConfig_initialValue .~ tagsInitVal)
 
-    divClass "field" $ do
-      el "label" $ text "Content"
+    -- let (fooDyn :: Dynamic t Text) = (value titleTxtInput)
+    -- let (barDyn :: Dynamic t Text) = (value authorTxtInput)
 
-      mdeChangeEvent <- simpleMDEWidget $ content post
-      (ct :: Dynamic t Int) <- R.count mdeChangeEvent
-      display ct
-      text ("\n" :: Text)
-      dynText =<< holdDyn "" mdeChangeEvent
-      -- a <- button "toOverview"
-      -- b <- button "Back"
-      -- performEvent_ $  goBack <$ b
-      -- return ("/" <$ a)
+    contentD <- divClass "field" $ do
+      el "label" $ text "Content"
+      simpleMDEWidget $ content post
+
+
+    let fooDyn = (<>) <$> (value titleTxtInput) <*> (value authorTxtInput)
+    dynText fooDyn
+
+    -- let fooDyn = (<>) <$> (value titleTxtInput) <*> contentD
+    dynText contentD
+
+    -- (ct :: Dynamic t Int) <- R.count mdeChangeEvent
+    -- display ct
+    -- text ("\n" :: Text)
+    -- dynText =<< holdDyn "" mdeChangeEvent
+    -- a <- button "toOverview"
+    -- b <- button "Back"
+    -- performEvent_ $  goBack <$ b
+    -- return ("/" <$ a)
 
     submitBtnE <- uiButton def $ text "Save"
     let submitE = ffor submitBtnE $ (\_ -> liftIO $ createPost dummyNewPost)

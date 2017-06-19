@@ -207,9 +207,10 @@ simpleMDEWidget :: (
     MonadJSM m,
     DomBuilder t m,
     DomBuilderSpace m ~ GhcjsDomSpace,
-    TriggerEvent t m
+    TriggerEvent t m,
+    MonadHold t m
     -- PostBuild t m
-  ) => Text -> m (Event t Text)
+  ) => Text -> m (Dynamic t Text)
 simpleMDEWidget initialValue =
     elClass "div" "simplemde-root" $ do
       liftJSM importSimpleMdeJs
@@ -228,6 +229,8 @@ simpleMDEWidget initialValue =
         ("change"::Text)
         (eval ("(function() {console.log('on change')})"::Text))
 
+      mdeChangeE <- getChangeEvent simpleMDEObj
+      holdDyn initialValue mdeChangeE
 
       -- postBuildE <- getPostBuild
       -- ffor postBuildE $ \_ -> do
@@ -238,12 +241,6 @@ simpleMDEWidget initialValue =
       --     ("on"::Text)
       --     ("change"::Text)
       --     (eval ("(function() {console.log('on change')})"::Text))
-
-
-
-
-
-      getChangeEvent simpleMDEObj
 
       -- let codemirror = simpleMDEObj ! ("codemirror"::Text)
       -- let parseEvent e = return () :: JSM ()
