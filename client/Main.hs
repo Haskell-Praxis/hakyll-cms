@@ -250,7 +250,7 @@ postForm submitBtnLabel initialValues = elClass "form" "ui form" $ do
   -- let dateD = constDyn $ newDate initialValues
   let postD = NewPost <$> titleD <*> authorD <*> tagsD <*> contentD
 
-  dynText $ fmap (T.pack . show) postD
+  -- dynText $ fmap (T.pack . show) postD
 
   (submitButton, _) <- elAttr' "button"
     (  ("class" =: "ui button")
