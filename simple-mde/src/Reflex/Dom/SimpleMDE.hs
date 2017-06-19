@@ -227,19 +227,11 @@ simpleMDEWidget initialValue =
 
       simpleMDEObj <- liftJSM $ startSimpleMDE initialValue mdeEl
 
-      -- let setInitVal = simpleMDEObj ^. js1 ("value" :: Text) initialValue
-      -- liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) initialValue
-
       -- workaround for https://github.com/nestor-qa/nestor/issues/98
       postBuildE <- getPostBuild
       delayedPostBuildE <- delay 1 postBuildE
       let refreshE = (refresh simpleMDEObj) <$ delayedPostBuildE
       performEvent refreshE
-
-      -- liftJSM $ simpleMDEObj ! ("codemirror"::Text) ^. js2
-      --   ("on"::Text)
-      --   ("change"::Text)
-      --   (eval ("(function() {console.log('on change')})"::Text))
 
       mdeChangeE <- getChangeEvent simpleMDEObj
       holdDyn initialValue mdeChangeE
@@ -254,23 +246,8 @@ setVal simpleMDEObj initialValue = do
   liftJSM $ simpleMDEObj ^. js1 ("value" :: Text) initialValue
   return ()
 
-      -- postBuildE <- getPostBuild
-      -- ffor postBuildE $ \_ -> do
-      --   -- simpleMDEObj :: JSVal
-      --   simpleMDEObj <- startSimpleMDE mdeEl
-      --   simpleMDEObj ^. js1 ("value" :: Text) initialValue
-      --   simpleMDEObj ! ("codemirror"::Text) ^. js2
-      --     ("on"::Text)
-      --     ("change"::Text)
-      --     (eval ("(function() {console.log('on change')})"::Text))
-
-      -- let codemirror = simpleMDEObj ! ("codemirror"::Text)
-      -- let parseEvent e = return () :: JSM ()
-      -- getElementEvent "change" parseEvent codemirror
 
 
-
--- getElementEvent :: (MonadJSM m, TriggerEvent t m, MakeObject el) => Text -> (JSVal -> JSM a) -> el -> m (Event t a)
 getChangeEvent :: (MonadJSM m, TriggerEvent t m) => JSVal -> m (Event t Text)
 getChangeEvent simpleMDEObj = do
   let codemirror = simpleMDEObj ! ("codemirror"::Text)
