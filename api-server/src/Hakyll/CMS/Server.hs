@@ -8,31 +8,33 @@ module Hakyll.CMS.Server
     where
 
 import           Cases
+import           Control.Concurrent.STM.TVar
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Control.Monad.STM
 import           Data.Bool
 import           Data.Eq
 import           Data.Function
 import           Data.Map
 import           Data.Maybe
 import           Data.Monoid
-import           Data.Sequences         hiding (pack)
-import           Data.String            (String)
+import           Data.Sequences              hiding (pack)
+import           Data.String                 (String)
 import           Data.Text
 import           Data.Time
 import           Data.Time.Format
 import           Data.Tuple
 import           Hakyll.CMS.API
 import           Hakyll.CMS.Types
-import qualified Hakyll.CMS.Types       as Types
-import           Prelude                (undefined)
+import qualified Hakyll.CMS.Types            as Types
+import           Prelude                     (undefined)
 import           Servant
 
 api :: Proxy API
 api = Proxy
 
-server :: Application
-server = serve api apiHandler
+server :: TVar PostList -> Application
+server tvar = serve api $ apiHandler tvar
 
 createDate :: String -> UTCTime
 createDate = parseTimeOrError False defaultTimeLocale "%F"
@@ -62,7 +64,9 @@ postList =
         }
     ]
 
-posts :: Map Id Types.Post
+type PostList = Map Id Types.Post
+
+posts :: PostList
 posts =
     Data.Map.fromList $ fmap toPair postList
     where
@@ -75,8 +79,8 @@ getId title date =
     in
         titlePart <> "_" <> datePart
 
-apiHandler :: Server API
-apiHandler = listPosts :<|> createPost :<|> postServer
+apiHandler :: TVar PostList -> Server API
+apiHandler tvar = listPosts tvar :<|> createPost tvar :<|> postServer tvar
 
 postFromCreation :: MonadIO m => NewPost -> m (Id, Types.Post)
 postFromCreation post = do
@@ -93,36 +97,63 @@ postFromCreation post = do
             }
         )
 
-createPost :: NewPost -> Handler (Headers '[Header "Location" Text] Types.Post)
-createPost newPost = do
+createPost :: TVar PostList -> NewPost -> Handler (Headers '[Header "Location" Text] Types.Post)
+createPost tvar newPost = do
     (id, post) <- postFromCreation newPost
-    when (member id posts) $
+    didFail <- liftIO $ atomically $ do
+        currentState <- readTVar tvar
+        if member id currentState then
+            return True
+        else do
+            writeTVar tvar (insert id post currentState)
+            return False
+
+    when didFail $
         throwError
             err409
                 { errReasonPhrase = "Post already exists" }
     return $ addHeader ("/" <> id) post
 
-listPosts :: Handler [PostSummary]
-listPosts =
+listPosts :: TVar PostList -> Handler [PostSummary]
+listPosts tvar = do
+    posts <- liftIO $ atomically $ readTVar tvar
     return $ fmap (uncurry getSummary) $ toList posts
 
-postServer :: Id -> Server PostAPI
-postServer id = getPost id :<|> updatePost id :<|> deletePost id
+postServer :: TVar PostList -> Id -> Server PostAPI
+postServer tvar id = getPost tvar id:<|> updatePost tvar id :<|> deletePost tvar id
 
-getPost :: Id -> Handler Types.Post
-getPost id =
+getPost :: TVar PostList ->  Id -> Handler Types.Post
+getPost tvar id = do
+    posts <- liftIO $ atomically $ readTVar tvar
     maybe (throwError err404) return (lookup id posts)
 
-updatePost :: Id -> Types.Post -> Handler Types.Post
-updatePost id post = do
+updatePost :: TVar PostList -> Id -> Types.Post -> Handler Types.Post
+updatePost tvar id post = do
+    err <- liftIO $ atomically $ do
+        currentState <- readTVar tvar
+        case lookup id currentState of
+            Just oldPost ->
+                if date oldPost /= date post
+                then
+                    return $ Just
+                        err403
+                            { errReasonPhrase = "creation date is immutable" }
+                else do
+                    writeTVar tvar $ insert id post currentState
+                    return Nothing
+            Nothing -> return $ Just err404
     oldPost <- maybe (throwError err404) return (lookup id posts)
-    when (date oldPost /= date post) $
-        throwError
-            err403
-                { errReasonPhrase = "creation date is immutable" }
-    return post
+    maybe (return post) throwError err
 
-deletePost :: Id -> Handler NoContent
-deletePost id = do
-    post <- maybe (throwError err404) return (lookup id posts)
+deletePost :: TVar PostList -> Id -> Handler NoContent
+deletePost tvar id = do
+    found <- liftIO $ atomically $ do
+        currentState <- readTVar tvar
+        if member id currentState
+        then do
+            writeTVar tvar $ Data.Map.delete id currentState
+            return True
+        else
+            return False
+    unless found $ throwError err404
     return NoContent
