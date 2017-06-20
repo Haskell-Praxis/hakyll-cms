@@ -39,38 +39,7 @@ server tvar = serve api $ apiHandler tvar
 createDate :: String -> UTCTime
 createDate = parseTimeOrError False defaultTimeLocale "%F"
 
-postList :: [Types.Post]
-postList =
-    [ Types.Post
-        { Types.title = "Testing 1"
-        , author = "Sam Dent"
-        , tags = ["tag1", "tag2"]
-        , content = "Lorem Ipsum 1"
-        , date = createDate "2017-01-08"
-        }
-    , Types.Post
-        { Types.title = "Hello World"
-        , author = "Sam Dent"
-        , tags = ["tag1", "tag2"]
-        , content = "Vestibulum sed placerat odio. Phasellus pulvinar ex in lorem auctor congue. Maecenas egestas auctor nisl, eget efficitur neque condimentum et. Ut auctor auctor molestie. Vestibulum porta urna sapien, eget iaculis velit bibendum sit amet. Pellentesque venenatis sapien in ligula egestas, eu aliquet orci laoreet."
-        , date = createDate "2017-01-09"
-        }
-    , Types.Post
-        { Types.title = "Getting Started"
-        , author = "Sam Dent"
-        , tags = ["tutorial", "tag2"]
-        , content = "Donec commodo et mauris non tempor. Nam elementum, quam in dapibus bibendum, nisl tortor ornare elit, et viverra lorem erat non velit. Sed in vulputate lorem. Nulla eget metus eu velit pulvinar ullamcorper et a sem. Donec sodales ullamcorper enim sed molestie. Nullam gravida neque dui."
-        , date = createDate "2017-01-10"
-        }
-    ]
-
 type PostList = Map Id Types.Post
-
-posts :: PostList
-posts =
-    Data.Map.fromList $ fmap toPair postList
-    where
-        toPair post = (getId (Types.title post) (date post), post)
 
 getId :: Title -> UTCTime -> Text
 getId title date =
@@ -142,7 +111,6 @@ updatePost tvar id post = do
                     writeTVar tvar $ insert id post currentState
                     return Nothing
             Nothing -> return $ Just err404
-    oldPost <- maybe (throwError err404) return (lookup id posts)
     maybe (return post) throwError err
 
 deletePost :: TVar PostList -> Id -> Handler NoContent
